@@ -1,5 +1,5 @@
 import { Toast, useToastController, useToastState } from '@tamagui/toast'
-import { Button, H4, XStack, YStack, isWeb } from 'tamagui'
+import { Button, H4, isWeb, XStack, YStack } from 'tamagui'
 
 export function CurrentToast() {
   const currentToast = useToastState()

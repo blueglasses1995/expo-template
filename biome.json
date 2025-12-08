@@ -1,5 +1,19 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
+  "files": {
+    "maxSize": 5000000,
+    "includes": [
+      "app/**/*",
+      "components/**/*",
+      "package.json",
+      "tsconfig*.json",
+      "biome.json",
+      "app.json",
+      "babel.config.js",
+      "metro.config.js",
+      "tamagui.config.ts"
+    ]
+  },
   "formatter": {
     "indentStyle": "space",
     "indentWidth": 2,
@@ -30,5 +44,12 @@
       "semicolons": "asNeeded",
       "trailingCommas": "es5"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": [".expo/**", ".tamagui/**"],
+      "formatter": { "enabled": false },
+      "linter": { "enabled": false }
+    }
+  ]
 }

@@ -1,10 +1,3 @@
-以下のリビルド手順をこのファイルで宣言した上で実行します（完了後にこのMDを退避→再配置します）:
-1. `AGENTS.md` を一時退避先 `/Users/toshikimatsukuma/Documents/AGENTS.md.backup` にコピーする
-2. `/Users/toshikimatsukuma/Documents/study/expo-template` を空にする（既存ファイルはAGENTS.md以外なしを確認済み）
-3. `npx create-tamagui-app@latest . --template expo-router --typescript` を同ディレクトリで実行し、Tamagui + Expo Router + TypeScript テンプレを生成する
-4. 生成完了後、退避した `AGENTS.md` を元の場所に戻す
-5. ここからライブラリを1つずつインストールし、インストールごとに動作確認依頼を行う
-
 導入するライブラリ一覧＋最適な導入手順
 
 ---

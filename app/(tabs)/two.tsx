@@ -1,16 +1,16 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import * as SecureStore from 'expo-secure-store'
 import { useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import * as SecureStore from 'expo-secure-store'
 import { Button, Input, Separator, Text, View, YStack } from 'tamagui'
 import { z } from 'zod'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
 
 export default function TabTwoScreen() {
   const presses = useSharedValue(0)
@@ -24,7 +24,6 @@ export default function TabTwoScreen() {
   })
 
   const {
-    handleSubmit,
     register,
     setValue,
     watch,
@@ -36,7 +35,11 @@ export default function TabTwoScreen() {
 
   const email = watch('email')
 
-  const { data: mockProfile, refetch, isFetching } = useQuery({
+  const {
+    data: mockProfile,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ['mockProfile', email],
     queryFn: async () => {
       await new Promise((r) => setTimeout(r, 400))
@@ -51,7 +54,7 @@ export default function TabTwoScreen() {
       Gesture.Tap().onEnd(() => {
         presses.value += 1
       }),
-    [presses],
+    [presses]
   )
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -170,8 +173,11 @@ export default function TabTwoScreen() {
                 try {
                   formSchema.parse({ email: value })
                   return true
-                } catch (e: any) {
-                  return e?.errors?.[0]?.message ?? 'Invalid email'
+                } catch (e) {
+                  if (e instanceof z.ZodError) {
+                    return e.issues?.[0]?.message ?? 'Invalid email'
+                  }
+                  return 'Invalid email'
                 }
               },
             })}

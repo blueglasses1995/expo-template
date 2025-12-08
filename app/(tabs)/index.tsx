@@ -1,11 +1,10 @@
 import { ExternalLink } from '@tamagui/lucide-icons'
-import { useEffect } from 'react'
-import { Image } from 'expo-image'
+import { ToastControl } from 'components/CurrentToast'
 import Constants from 'expo-constants'
 import * as Device from 'expo-device'
 import * as Haptics from 'expo-haptics'
-import Svg, { Circle } from 'react-native-svg'
-import { Anchor, H2, Paragraph, SizableText, XStack, YStack } from 'tamagui'
+import { Image } from 'expo-image'
+import { useEffect } from 'react'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -13,13 +12,18 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
-import { ToastControl } from 'components/CurrentToast'
+import Svg, { Circle } from 'react-native-svg'
+import { Anchor, H2, Paragraph, SizableText, XStack, YStack } from 'tamagui'
 
 export default function TabOneScreen() {
   const spin = useSharedValue(0)
 
   useEffect(() => {
-    spin.value = withRepeat(withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.ease) }), -1, true)
+    spin.value = withRepeat(
+      withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    )
   }, [spin])
 
   const spinStyle = useAnimatedStyle(() => ({
@@ -36,7 +40,17 @@ export default function TabOneScreen() {
 
       <ToastControl />
 
-      <Animated.View style={[{ width: 96, height: 96, borderRadius: 24, backgroundColor: '#5EEAD4' }, spinStyle]} />
+      <Animated.View
+        style={[
+          {
+            width: 96,
+            height: 96,
+            borderRadius: 24,
+            backgroundColor: '#5EEAD4',
+          },
+          spinStyle,
+        ]}
+      />
 
       <Image
         source={{
