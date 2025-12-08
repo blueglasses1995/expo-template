@@ -1,5 +1,6 @@
 import { ExternalLink } from '@tamagui/lucide-icons'
 import { useEffect } from 'react'
+import { Image } from 'expo-image'
 import { Anchor, H2, Paragraph, XStack, YStack } from 'tamagui'
 import Animated, {
   Easing,
@@ -32,6 +33,15 @@ export default function TabOneScreen() {
       <ToastControl />
 
       <Animated.View style={[{ width: 96, height: 96, borderRadius: 24, backgroundColor: '#5EEAD4' }, spinStyle]} />
+
+      <Image
+        source={{
+          uri: 'https://images.unsplash.com/photo-1503264116251-35a269479413?w=600&auto=format&fit=crop',
+        }}
+        style={{ width: 220, height: 140, borderRadius: 16 }}
+        contentFit="cover"
+        transition={400}
+      />
 
       <XStack
         items="center"
