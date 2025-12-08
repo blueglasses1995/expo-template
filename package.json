@@ -12,6 +12,9 @@
     "upgrade:tamagui": "pnpm up '*tamagui*'@latest '@tamagui/*'@latest",
     "upgrade:tamagui:canary": "pnpm up '*tamagui*'@canary '@tamagui/*'@canary",
     "check:tamagui": "tamagui check",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "prepare": "husky",
     "start": "expo start -c",
     "android": "expo run:android",
     "ios": "expo run:ios",
@@ -73,5 +76,10 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "typescript": "~5.9.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json}": [
+      "pnpm biome check --write --no-errors-on-unmatched"
+    ]
   }
 }
