@@ -89,6 +89,7 @@ npx expo install expo-linking expo-constants expo-status-bar
 npm install @supabase/supabase-js
 npm install @tanstack/react-query
 npm install react-hook-form
+npm install zod
 ```
 
 これは純JSなので依存衝突しない。

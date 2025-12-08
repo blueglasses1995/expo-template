@@ -1,7 +1,9 @@
+import 'react-native-gesture-handler'
 import '../tamagui-web.css'
 
 import { useEffect } from 'react'
 import { useColorScheme } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { StatusBar } from 'expo-status-bar'
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
 import { useFonts } from 'expo-font'
@@ -46,9 +48,11 @@ export default function RootLayout() {
   )
 }
 
-const Providers = ({ children }: { children: React.ReactNode }) => {
-  return <Provider>{children}</Provider>
-}
+const Providers = ({ children }: { children: React.ReactNode }) => (
+  <GestureHandlerRootView style={{ flex: 1 }}>
+    <Provider>{children}</Provider>
+  </GestureHandlerRootView>
+)
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme()
