@@ -8,12 +8,43 @@ import Animated, {
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as SecureStore from 'expo-secure-store'
 import { Button, Separator, Text, View, YStack } from 'tamagui'
+import { z } from 'zod'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
 
 export default function TabTwoScreen() {
   const presses = useSharedValue(0)
   const [storageValue, setStorageValue] = useState<string | null>(null)
   const [secureValue, setSecureValue] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const queryClient = useQueryClient()
+
+  const formSchema = z.object({
+    email: z.string().email(),
+  })
+
+  const {
+    handleSubmit,
+    register,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<z.infer<typeof formSchema>>({
+    defaultValues: { email: 'user@example.com' },
+    mode: 'onChange',
+  })
+
+  const email = watch('email')
+
+  const { data: mockProfile, refetch, isFetching } = useQuery({
+    queryKey: ['mockProfile', email],
+    queryFn: async () => {
+      await new Promise((r) => setTimeout(r, 400))
+      const parsed = formSchema.parse({ email })
+      return { email: parsed.email, plan: 'free' }
+    },
+    enabled: false,
+  })
 
   const tap = useMemo(
     () =>
@@ -122,6 +153,62 @@ export default function TabTwoScreen() {
           Read SecureStore
         </Button>
         <Text color="$gray11">Secure: {secureValue ?? 'none'}</Text>
+      </YStack>
+      <Separator />
+      <YStack gap="$3" w="100%" maw={360}>
+        <Text fontSize={18} color="$color">
+          Form + Query demo
+        </Text>
+        <YStack gap="$2">
+          <Text color="$gray11">Email (validated by zod)</Text>
+          <View
+            bg="$color2"
+            borderRadius="$4"
+            px="$3"
+            py="$2"
+            borderWidth={1}
+            borderColor={errors.email ? '$red8' : '$borderColor'}
+          >
+            <input
+              style={{
+                width: '100%',
+                outline: 'none',
+                backgroundColor: 'transparent',
+                color: 'inherit',
+                fontSize: 16,
+              }}
+              {...register('email', {
+                validate: (value) => {
+                  try {
+                    formSchema.parse({ email: value })
+                    return true
+                  } catch (e: any) {
+                    return e?.errors?.[0]?.message ?? 'Invalid email'
+                  }
+                },
+              })}
+              onChange={(e) => setValue('email', e.target.value, { shouldValidate: true })}
+              value={email}
+            />
+          </View>
+          {errors.email && (
+            <Text color="$red10" size="$3">
+              {String(errors.email.message)}
+            </Text>
+          )}
+        </YStack>
+        <Button
+          onPress={() => {
+            queryClient.invalidateQueries({ queryKey: ['mockProfile', email] })
+            refetch()
+          }}
+          disabled={isFetching}
+        >
+          Fetch profile (mock)
+        </Button>
+        <Text color="$gray11">
+          Result: {mockProfile ? `${mockProfile.email} (${mockProfile.plan})` : 'none'}
+        </Text>
       </YStack>
     </View>
   )
