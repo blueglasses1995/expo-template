@@ -3,6 +3,10 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "packageManager": "pnpm@9.12.0",
+  "volta": {
+    "node": "23.4.0",
+    "pnpm": "9.12.0"
+  },
   "private": true,
   "scripts": {
     "upgrade:tamagui": "pnpm up '*tamagui*'@latest '@tamagui/*'@latest",
@@ -58,6 +62,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.6",
+    "@biomejs/biome": "^2.3.8",
     "@expo/metro-config": "~54.0.2",
     "@expo/metro-runtime": "~6.1.2",
     "@tamagui/babel-plugin": "^1.138.6",
@@ -65,6 +70,8 @@
     "@tamagui/metro-plugin": "^1.138.6",
     "@types/react": "~19.1.10",
     "@types/react-native": "^0.73.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "typescript": "~5.9.2"
   }
 }
