@@ -1,13 +1,37 @@
 import { ExternalLink } from '@tamagui/lucide-icons'
+import { useEffect } from 'react'
 import { Anchor, H2, Paragraph, XStack, YStack } from 'tamagui'
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated'
 import { ToastControl } from 'components/CurrentToast'
 
 export default function TabOneScreen() {
+  const spin = useSharedValue(0)
+
+  useEffect(() => {
+    spin.value = withRepeat(withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.ease) }), -1, true)
+  }, [spin])
+
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        rotate: `${spin.value * 360}deg`,
+      },
+    ],
+  }))
+
   return (
     <YStack flex={1} items="center" gap="$8" px="$10" pt="$5" bg="$background">
       <H2>Tamagui + Expo</H2>
 
       <ToastControl />
+
+      <Animated.View style={[{ width: 96, height: 96, borderRadius: 24, backgroundColor: '#5EEAD4' }, spinStyle]} />
 
       <XStack
         items="center"
