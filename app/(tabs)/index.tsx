@@ -1,7 +1,8 @@
 import { ExternalLink } from '@tamagui/lucide-icons'
 import { useEffect } from 'react'
 import { Image } from 'expo-image'
-import { Anchor, H2, Paragraph, XStack, YStack } from 'tamagui'
+import Constants from 'expo-constants'
+import { Anchor, H2, Paragraph, SizableText, XStack, YStack } from 'tamagui'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -42,6 +43,18 @@ export default function TabOneScreen() {
         contentFit="cover"
         transition={400}
       />
+
+      <YStack gap="$2" ai="center">
+        <SizableText size="$4" color="$color">
+          Expo Constants
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          appOwnership: {Constants.appOwnership ?? 'unknown'}
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          expoVersion: {Constants.expoVersion ?? 'n/a'}
+        </SizableText>
+      </YStack>
 
       <XStack
         items="center"
