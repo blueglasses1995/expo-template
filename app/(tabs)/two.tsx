@@ -1,14 +1,19 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
-import { Text, View, YStack } from 'tamagui'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as SecureStore from 'expo-secure-store'
+import { Button, Separator, Text, View, YStack } from 'tamagui'
 
 export default function TabTwoScreen() {
   const presses = useSharedValue(0)
+  const [storageValue, setStorageValue] = useState<string | null>(null)
+  const [secureValue, setSecureValue] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
   const tap = useMemo(
     () =>
@@ -28,6 +33,42 @@ export default function TabTwoScreen() {
       ],
     }
   })
+
+  const writeAsyncStorage = async () => {
+    try {
+      setBusy(true)
+      const value = `demo-${Date.now()}`
+      await AsyncStorage.setItem('demo:key', value)
+      setStorageValue(value)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const readAsyncStorage = async () => {
+    const value = await AsyncStorage.getItem('demo:key')
+    setStorageValue(value)
+  }
+
+  const secureKey = 'secure_key'
+
+  const writeSecureStore = async () => {
+    try {
+      setBusy(true)
+      const value = `secure-${Date.now()}`
+      await SecureStore.setItemAsync(secureKey, value, {
+        keychainAccessible: SecureStore.WHEN_UNLOCKED,
+      })
+      setSecureValue(value)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const readSecureStore = async () => {
+    const value = await SecureStore.getItemAsync(secureKey)
+    setSecureValue(value)
+  }
 
   return (
     <View flex={1} items="center" justify="center" bg="$background" px="$4" gap="$4">
@@ -61,6 +102,27 @@ export default function TabTwoScreen() {
       <Text color="$color" textAlign="center">
         react-native-gesture-handler + Reanimated 簡易デモ
       </Text>
+      <Separator />
+      <YStack gap="$3" w="100%" maw={360}>
+        <Text fontSize={18} color="$color">
+          Storage demo
+        </Text>
+        <Button disabled={busy} onPress={writeAsyncStorage}>
+          Write AsyncStorage
+        </Button>
+        <Button disabled={busy} onPress={readAsyncStorage} variant="outlined">
+          Read AsyncStorage
+        </Button>
+        <Text color="$gray11">Value: {storageValue ?? 'none'}</Text>
+        <Separator />
+        <Button disabled={busy} onPress={writeSecureStore}>
+          Write SecureStore
+        </Button>
+        <Button disabled={busy} onPress={readSecureStore} variant="outlined">
+          Read SecureStore
+        </Button>
+        <Text color="$gray11">Secure: {secureValue ?? 'none'}</Text>
+      </YStack>
     </View>
   )
 }
