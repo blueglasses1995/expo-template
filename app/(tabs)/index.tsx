@@ -3,6 +3,8 @@ import { useEffect } from 'react'
 import { Image } from 'expo-image'
 import Constants from 'expo-constants'
 import * as Device from 'expo-device'
+import * as Haptics from 'expo-haptics'
+import Svg, { Circle } from 'react-native-svg'
 import { Anchor, H2, Paragraph, SizableText, XStack, YStack } from 'tamagui'
 import Animated, {
   Easing,
@@ -70,6 +72,43 @@ export default function TabOneScreen() {
         <SizableText size="$3" color="$gray11">
           deviceType: {Device.deviceType ?? 'n/a'}
         </SizableText>
+      </YStack>
+
+      <YStack gap="$3" ai="center">
+        <SizableText size="$4" color="$color">
+          Haptics & SVG
+        </SizableText>
+        <XStack gap="$3">
+          <Animated.View>
+            <Svg width={120} height={120}>
+              <Circle cx={60} cy={60} r={52} fill="#C7D2FE" />
+              <Circle cx={60} cy={60} r={32} fill="#818CF8" />
+            </Svg>
+          </Animated.View>
+        </XStack>
+        <XStack gap="$3">
+          <Paragraph color="$color">Trigger haptics:</Paragraph>
+          <Anchor
+            href="#"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+              return false
+            }}
+            color="$blue10"
+          >
+            impact
+          </Anchor>
+          <Anchor
+            href="#"
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+              return false
+            }}
+            color="$green10"
+          >
+            success
+          </Anchor>
+        </XStack>
       </YStack>
 
       <XStack
