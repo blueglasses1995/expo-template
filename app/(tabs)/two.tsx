@@ -7,7 +7,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as SecureStore from 'expo-secure-store'
-import { Button, Separator, Text, View, YStack } from 'tamagui'
+import { Button, Input, Separator, Text, View, YStack } from 'tamagui'
 import { z } from 'zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
@@ -161,36 +161,21 @@ export default function TabTwoScreen() {
         </Text>
         <YStack gap="$2">
           <Text color="$gray11">Email (validated by zod)</Text>
-          <View
-            bg="$color2"
-            borderRadius="$4"
-            px="$3"
-            py="$2"
-            borderWidth={1}
+          <Input
+            value={email}
+            onChangeText={(text) => setValue('email', text, { shouldValidate: true })}
             borderColor={errors.email ? '$red8' : '$borderColor'}
-          >
-            <input
-              style={{
-                width: '100%',
-                outline: 'none',
-                backgroundColor: 'transparent',
-                color: 'inherit',
-                fontSize: 16,
-              }}
-              {...register('email', {
-                validate: (value) => {
-                  try {
-                    formSchema.parse({ email: value })
-                    return true
-                  } catch (e: any) {
-                    return e?.errors?.[0]?.message ?? 'Invalid email'
-                  }
-                },
-              })}
-              onChange={(e) => setValue('email', e.target.value, { shouldValidate: true })}
-              value={email}
-            />
-          </View>
+            {...register('email', {
+              validate: (value) => {
+                try {
+                  formSchema.parse({ email: value })
+                  return true
+                } catch (e: any) {
+                  return e?.errors?.[0]?.message ?? 'Invalid email'
+                }
+              },
+            })}
+          />
           {errors.email && (
             <Text color="$red10" size="$3">
               {String(errors.email.message)}
