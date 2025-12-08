@@ -1,15 +1,19 @@
 import 'react-native-gesture-handler'
-import '../tamagui-web.css'
-
 import { useEffect } from 'react'
 import { useColorScheme } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { enableScreens } from 'react-native-screens'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import '../tamagui-web.css'
+
 import { StatusBar } from 'expo-status-bar'
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
 import { useFonts } from 'expo-font'
 import { SplashScreen, Stack } from 'expo-router'
 import { Provider } from 'components/Provider'
 import { useTheme } from 'tamagui'
+
+enableScreens(true)
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -50,7 +54,9 @@ export default function RootLayout() {
 
 const Providers = ({ children }: { children: React.ReactNode }) => (
   <GestureHandlerRootView style={{ flex: 1 }}>
-    <Provider>{children}</Provider>
+    <SafeAreaProvider>
+      <Provider>{children}</Provider>
+    </SafeAreaProvider>
   </GestureHandlerRootView>
 )
 
