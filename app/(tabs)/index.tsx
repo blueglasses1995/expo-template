@@ -2,6 +2,7 @@ import { ExternalLink } from '@tamagui/lucide-icons'
 import { useEffect } from 'react'
 import { Image } from 'expo-image'
 import Constants from 'expo-constants'
+import * as Device from 'expo-device'
 import { Anchor, H2, Paragraph, SizableText, XStack, YStack } from 'tamagui'
 import Animated, {
   Easing,
@@ -53,6 +54,21 @@ export default function TabOneScreen() {
         </SizableText>
         <SizableText size="$3" color="$gray11">
           expoVersion: {Constants.expoVersion ?? 'n/a'}
+        </SizableText>
+      </YStack>
+
+      <YStack gap="$2" ai="center">
+        <SizableText size="$4" color="$color">
+          Expo Device
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          model: {Device.modelName ?? 'unknown'}
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          os: {Device.osName ?? 'unknown'} {Device.osVersion ?? ''}
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          deviceType: {Device.deviceType ?? 'n/a'}
         </SizableText>
       </YStack>
 
