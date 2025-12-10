@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as LocalAuthentication from 'expo-local-authentication'
 import * as Notifications from 'expo-notifications'
+import * as ScreenOrientation from 'expo-screen-orientation'
 import * as SecureStore from 'expo-secure-store'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -26,6 +27,8 @@ export default function TabTwoScreen() {
   const [authEnrolled, setAuthEnrolled] = useState<string>('unknown')
   const [authTypes, setAuthTypes] = useState<string>('n/a')
   const [authResult, setAuthResult] = useState<string>('not tested')
+  const [orientation, setOrientation] = useState<string>('unknown')
+  const [locked, setLocked] = useState<string>('unlocked')
   const queryClient = useQueryClient()
 
   const formSchema = z.object({
@@ -191,6 +194,29 @@ export default function TabTwoScreen() {
     }
   }
 
+  const updateOrientation = async () => {
+    const current = await ScreenOrientation.getOrientationAsync()
+    setOrientation(ScreenOrientation.Orientation[current] ?? String(current))
+  }
+
+  const lockPortrait = async () => {
+    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP)
+    setLocked('portrait')
+    await updateOrientation()
+  }
+
+  const lockLandscape = async () => {
+    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE)
+    setLocked('landscape')
+    await updateOrientation()
+  }
+
+  const unlockOrientation = async () => {
+    await ScreenOrientation.unlockAsync()
+    setLocked('unlocked')
+    await updateOrientation()
+  }
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: 'transparent' }}
@@ -323,6 +349,20 @@ export default function TabTwoScreen() {
           <Text color="$gray11">Enrollment: {authEnrolled}</Text>
           <Text color="$gray11">Types: {authTypes}</Text>
           <Text color="$gray11">Last result: {authResult}</Text>
+        </YStack>
+        <Separator />
+        <YStack gap="$3" w="100%" maw={360}>
+          <Text fontSize={18} color="$color">
+            Screen orientation demo
+          </Text>
+          <Button onPress={updateOrientation}>Get orientation</Button>
+          <Button onPress={lockPortrait}>Lock portrait</Button>
+          <Button onPress={lockLandscape}>Lock landscape</Button>
+          <Button onPress={unlockOrientation} variant="outlined">
+            Unlock orientation
+          </Button>
+          <Text color="$gray11">Current: {orientation}</Text>
+          <Text color="$gray11">Lock: {locked}</Text>
         </YStack>
       </View>
     </ScrollView>
