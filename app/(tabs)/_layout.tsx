@@ -49,10 +49,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="updates"
+        options={{
+          title: 'Updates',
+          tabBarIcon: ({ color }: { color: string }) => <AudioWaveform color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="four"
         options={{
-          title: 'Tab Four',
-          tabBarIcon: ({ color }: { color: string }) => <AudioWaveform color={color} />,
+          title: 'Storybook',
+          tabBarIcon: ({ color }: { color: string }) => <Atom color={color} />,
         }}
       />
     </Tabs>
