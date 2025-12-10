@@ -1,3 +1,4 @@
+import * as AppIntegrity from '@expo/app-integrity'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as LocalAuthentication from 'expo-local-authentication'
@@ -6,7 +7,7 @@ import * as ScreenOrientation from 'expo-screen-orientation'
 import * as SecureStore from 'expo-secure-store'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { ScrollView } from 'react-native'
+import { Platform, ScrollView } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   useAnimatedStyle,
@@ -29,6 +30,8 @@ export default function TabTwoScreen() {
   const [authResult, setAuthResult] = useState<string>('not tested')
   const [orientation, setOrientation] = useState<string>('unknown')
   const [locked, setLocked] = useState<string>('unlocked')
+  const [integritySupport, setIntegritySupport] = useState<string>('unknown')
+  const [hardwareIntegrity, setHardwareIntegrity] = useState<string>('unknown')
   const queryClient = useQueryClient()
 
   const formSchema = z.object({
@@ -191,6 +194,24 @@ export default function TabTwoScreen() {
       setAuthResult(`error: ${result.error}`)
     } else {
       setAuthResult('cancelled')
+    }
+  }
+
+  useEffect(() => {
+    // App Attest is iOS-only; value is static
+    setIntegritySupport(AppIntegrity.isSupported ? 'supported' : 'not supported')
+  }, [])
+
+  const checkHardwareIntegrity = async () => {
+    if (Platform.OS !== 'android') {
+      setHardwareIntegrity('n/a (android only)')
+      return
+    }
+    try {
+      const supported = await AppIntegrity.isHardwareAttestationSupportedAsync()
+      setHardwareIntegrity(supported ? 'supported' : 'not supported')
+    } catch (e) {
+      setHardwareIntegrity(`error: ${String(e)}`)
     }
   }
 
@@ -363,6 +384,17 @@ export default function TabTwoScreen() {
           </Button>
           <Text color="$gray11">Current: {orientation}</Text>
           <Text color="$gray11">Lock: {locked}</Text>
+        </YStack>
+        <Separator />
+        <YStack gap="$3" w="100%" maw={360}>
+          <Text fontSize={18} color="$color">
+            App integrity demo
+          </Text>
+          <Text color="$gray11">iOS App Attest: {integritySupport}</Text>
+          <Button onPress={checkHardwareIntegrity}>
+            Check Android hardware attestation
+          </Button>
+          <Text color="$gray11">Android hardware: {hardwareIntegrity}</Text>
         </YStack>
       </View>
     </ScrollView>
