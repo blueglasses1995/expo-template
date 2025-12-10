@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as SecureStore from 'expo-secure-store'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { ScrollView } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   useAnimatedStyle,
@@ -105,102 +106,113 @@ export default function TabTwoScreen() {
   }
 
   return (
-    <View flex={1} items="center" justify="center" bg="$background" px="$4" gap="$4">
-      <Text fontSize={20} color="$blue10">
-        Gesture demo
-      </Text>
-      <GestureDetector gesture={tap}>
-        <Animated.View
-          style={[
-            {
-              width: 200,
-              height: 120,
-              borderRadius: 12,
-              backgroundColor: '#6EE7B7',
-              justifyContent: 'center',
-              alignItems: 'center',
-            },
-            animatedStyle,
-          ]}
-        >
-          <YStack gap="$2" alignItems="center">
-            <Text fontSize={18} color="$green12">
-              Tap me
-            </Text>
-            <Text fontSize={16} color="$green12">
-              Taps: {Math.round(presses.value)}
-            </Text>
-          </YStack>
-        </Animated.View>
-      </GestureDetector>
-      <Text color="$color" textAlign="center">
-        react-native-gesture-handler + Reanimated 簡易デモ
-      </Text>
-      <Separator />
-      <YStack gap="$3" w="100%" maw={360}>
-        <Text fontSize={18} color="$color">
-          Storage demo
+    <ScrollView
+      style={{ flex: 1, backgroundColor: 'transparent' }}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingVertical: 20,
+        gap: 16,
+        alignItems: 'center',
+        paddingBottom: 120,
+      }}
+    >
+      <View items="center" justify="center" gap="$4" w="100%">
+        <Text fontSize={20} color="$blue10">
+          Gesture demo
         </Text>
-        <Button disabled={busy} onPress={writeAsyncStorage}>
-          Write AsyncStorage
-        </Button>
-        <Button disabled={busy} onPress={readAsyncStorage} variant="outlined">
-          Read AsyncStorage
-        </Button>
-        <Text color="$gray11">Value: {storageValue ?? 'none'}</Text>
-        <Separator />
-        <Button disabled={busy} onPress={writeSecureStore}>
-          Write SecureStore
-        </Button>
-        <Button disabled={busy} onPress={readSecureStore} variant="outlined">
-          Read SecureStore
-        </Button>
-        <Text color="$gray11">Secure: {secureValue ?? 'none'}</Text>
-      </YStack>
-      <Separator />
-      <YStack gap="$3" w="100%" maw={360}>
-        <Text fontSize={18} color="$color">
-          Form + Query demo
-        </Text>
-        <YStack gap="$2">
-          <Text color="$gray11">Email (validated by zod)</Text>
-          <Input
-            value={email}
-            onChangeText={(text) => setValue('email', text, { shouldValidate: true })}
-            borderColor={errors.email ? '$red8' : '$borderColor'}
-            {...register('email', {
-              validate: (value) => {
-                try {
-                  formSchema.parse({ email: value })
-                  return true
-                } catch (e) {
-                  if (e instanceof z.ZodError) {
-                    return e.issues?.[0]?.message ?? 'Invalid email'
-                  }
-                  return 'Invalid email'
-                }
+        <GestureDetector gesture={tap}>
+          <Animated.View
+            style={[
+              {
+                width: 200,
+                height: 120,
+                borderRadius: 12,
+                backgroundColor: '#6EE7B7',
+                justifyContent: 'center',
+                alignItems: 'center',
               },
-            })}
-          />
-          {errors.email && (
-            <Text color="$red10" size="$3">
-              {String(errors.email.message)}
-            </Text>
-          )}
-        </YStack>
-        <Button
-          onPress={() => {
-            queryClient.invalidateQueries({ queryKey: ['mockProfile', email] })
-            refetch()
-          }}
-          disabled={isFetching}
-        >
-          Fetch profile (mock)
-        </Button>
-        <Text color="$gray11">
-          Result: {mockProfile ? `${mockProfile.email} (${mockProfile.plan})` : 'none'}
+              animatedStyle,
+            ]}
+          >
+            <YStack gap="$2" alignItems="center">
+              <Text fontSize={18} color="$green12">
+                Tap me
+              </Text>
+              <Text fontSize={16} color="$green12">
+                Taps: {Math.round(presses.value)}
+              </Text>
+            </YStack>
+          </Animated.View>
+        </GestureDetector>
+        <Text color="$color" textAlign="center">
+          react-native-gesture-handler + Reanimated 簡易デモ
         </Text>
-      </YStack>
-    </View>
+        <Separator />
+        <YStack gap="$3" w="100%" maw={360}>
+          <Text fontSize={18} color="$color">
+            Storage demo
+          </Text>
+          <Button disabled={busy} onPress={writeAsyncStorage}>
+            Write AsyncStorage
+          </Button>
+          <Button disabled={busy} onPress={readAsyncStorage} variant="outlined">
+            Read AsyncStorage
+          </Button>
+          <Text color="$gray11">Value: {storageValue ?? 'none'}</Text>
+          <Separator />
+          <Button disabled={busy} onPress={writeSecureStore}>
+            Write SecureStore
+          </Button>
+          <Button disabled={busy} onPress={readSecureStore} variant="outlined">
+            Read SecureStore
+          </Button>
+          <Text color="$gray11">Secure: {secureValue ?? 'none'}</Text>
+        </YStack>
+        <Separator />
+        <YStack gap="$3" w="100%" maw={360}>
+          <Text fontSize={18} color="$color">
+            Form + Query demo
+          </Text>
+          <YStack gap="$2">
+            <Text color="$gray11">Email (validated by zod)</Text>
+            <Input
+              value={email}
+              onChangeText={(text) => setValue('email', text, { shouldValidate: true })}
+              borderColor={errors.email ? '$red8' : '$borderColor'}
+              {...register('email', {
+                validate: (value) => {
+                  try {
+                    formSchema.parse({ email: value })
+                    return true
+                  } catch (e) {
+                    if (e instanceof z.ZodError) {
+                      return e.issues?.[0]?.message ?? 'Invalid email'
+                    }
+                    return 'Invalid email'
+                  }
+                },
+              })}
+            />
+            {errors.email && (
+              <Text color="$red10" size="$3">
+                {String(errors.email.message)}
+              </Text>
+            )}
+          </YStack>
+          <Button
+            onPress={() => {
+              queryClient.invalidateQueries({ queryKey: ['mockProfile', email] })
+              refetch()
+            }}
+            disabled={isFetching}
+          >
+            Fetch profile (mock)
+          </Button>
+          <Text color="$gray11">
+            Result: {mockProfile ? `${mockProfile.email} (${mockProfile.plan})` : 'none'}
+          </Text>
+        </YStack>
+      </View>
+    </ScrollView>
   )
 }

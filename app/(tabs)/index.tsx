@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import { Accelerometer } from 'expo-sensors'
 import { useEffect, useState } from 'react'
+import { ScrollView } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -46,7 +47,16 @@ export default function TabOneScreen() {
   }))
 
   return (
-    <YStack flex={1} items="center" gap="$8" px="$10" pt="$5" bg="$background">
+    <ScrollView
+      style={{ flex: 1, backgroundColor: 'transparent' }}
+      contentContainerStyle={{
+        paddingHorizontal: 24,
+        paddingVertical: 20,
+        gap: 24,
+        alignItems: 'center',
+        paddingBottom: 120,
+      }}
+    >
       <XStack ai="center" gap="$2">
         <Ionicons name="rocket-outline" size={24} color="#5EEAD4" />
         <H2>Tamagui + Expo</H2>
@@ -195,6 +205,6 @@ export default function TabOneScreen() {
           to configure your themes and tokens.
         </Paragraph>
       </XStack>
-    </YStack>
+    </ScrollView>
   )
 }
