@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import Svg, { Circle } from 'react-native-svg'
 import { Anchor, H2, Paragraph, SizableText, XStack, YStack } from 'tamagui'
+import StorybookUIRoot from '../../storybook'
 
 export default function TabOneScreen() {
   const spin = useSharedValue(0)
@@ -166,6 +167,13 @@ export default function TabOneScreen() {
           to configure your themes and tokens.
         </Paragraph>
       </XStack>
+
+      <YStack gap="$3" ai="center" w="100%">
+        <SizableText size="$4" color="$color">
+          Storybook (embedded)
+        </SizableText>
+        <StorybookUIRoot />
+      </YStack>
     </YStack>
   )
 }
