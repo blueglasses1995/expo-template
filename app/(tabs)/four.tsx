@@ -46,11 +46,13 @@ export default function TabFourScreen() {
         </Anchor>
       </YStack>
 
-      <YStack gap="$3" ai="center" w="100%">
+      <YStack gap="$3" ai="center" w="100%" flex={1}>
         <SizableText size="$4" color="$color">
           Storybook (embedded)
         </SizableText>
-        <StorybookUIRoot />
+        <YStack flex={1} w="100%">
+          <StorybookUIRoot />
+        </YStack>
       </YStack>
     </YStack>
   )
