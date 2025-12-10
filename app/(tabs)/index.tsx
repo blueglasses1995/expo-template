@@ -5,7 +5,7 @@ import Constants from 'expo-constants'
 import * as Device from 'expo-device'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
-import { Accelerometer } from 'expo-sensors'
+import { Accelerometer, Gyroscope } from 'expo-sensors'
 import { useEffect, useState } from 'react'
 import { ScrollView } from 'react-native'
 import Animated, {
@@ -21,6 +21,7 @@ import { Anchor, H2, Paragraph, SizableText, XStack, YStack } from 'tamagui'
 export default function TabOneScreen() {
   const spin = useSharedValue(0)
   const [accel, setAccel] = useState<{ x: number; y: number; z: number } | null>(null)
+  const [gyro, setGyro] = useState<{ x: number; y: number; z: number } | null>(null)
 
   useEffect(() => {
     spin.value = withRepeat(
@@ -34,6 +35,14 @@ export default function TabOneScreen() {
     Accelerometer.setUpdateInterval(500)
     const sub = Accelerometer.addListener((measurement) => {
       setAccel(measurement)
+    })
+    return () => sub.remove()
+  }, [])
+
+  useEffect(() => {
+    Gyroscope.setUpdateInterval(500)
+    const sub = Gyroscope.addListener((measurement) => {
+      setGyro(measurement)
     })
     return () => sub.remove()
   }, [])
@@ -124,6 +133,21 @@ export default function TabOneScreen() {
         </SizableText>
         <SizableText size="$3" color="$gray11">
           z: {accel ? accel.z.toFixed(2) : '...'}
+        </SizableText>
+      </YStack>
+
+      <YStack gap="$2" ai="center">
+        <SizableText size="$4" color="$color">
+          Sensors (gyroscope)
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          x: {gyro ? gyro.x.toFixed(2) : '...'}
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          y: {gyro ? gyro.y.toFixed(2) : '...'}
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          z: {gyro ? gyro.z.toFixed(2) : '...'}
         </SizableText>
       </YStack>
 
