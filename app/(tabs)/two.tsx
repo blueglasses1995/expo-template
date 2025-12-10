@@ -1,4 +1,4 @@
-import * as AppIntegrity from '@expo/app-integrity'
+import type * as AppIntegrityType from '@expo/app-integrity'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as LocalAuthentication from 'expo-local-authentication'
@@ -33,6 +33,15 @@ export default function TabTwoScreen() {
   const [integritySupport, setIntegritySupport] = useState<string>('unknown')
   const [hardwareIntegrity, setHardwareIntegrity] = useState<string>('unknown')
   const queryClient = useQueryClient()
+
+  const getAppIntegrity = (): typeof AppIntegrityType | null => {
+    try {
+      const mod = require('@expo/app-integrity') as typeof AppIntegrityType
+      return mod
+    } catch {
+      return null
+    }
+  }
 
   const formSchema = z.object({
     email: z.string().email(),
@@ -198,17 +207,26 @@ export default function TabTwoScreen() {
   }
 
   useEffect(() => {
-    // App Attest is iOS-only; value is static
-    setIntegritySupport(AppIntegrity.isSupported ? 'supported' : 'not supported')
+    const mod = getAppIntegrity()
+    if (!mod) {
+      setIntegritySupport('unavailable (not in Expo Go)')
+      return
+    }
+    setIntegritySupport(mod.isSupported ? 'supported' : 'not supported')
   }, [])
 
   const checkHardwareIntegrity = async () => {
+    const mod = getAppIntegrity()
+    if (!mod) {
+      setHardwareIntegrity('unavailable (not in Expo Go)')
+      return
+    }
     if (Platform.OS !== 'android') {
       setHardwareIntegrity('n/a (android only)')
       return
     }
     try {
-      const supported = await AppIntegrity.isHardwareAttestationSupportedAsync()
+      const supported = await mod.isHardwareAttestationSupportedAsync()
       setHardwareIntegrity(supported ? 'supported' : 'not supported')
     } catch (e) {
       setHardwareIntegrity(`error: ${String(e)}`)
