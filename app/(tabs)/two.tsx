@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import * as Notifications from 'expo-notifications'
 import * as SecureStore from 'expo-secure-store'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ScrollView } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -18,6 +19,8 @@ export default function TabTwoScreen() {
   const [storageValue, setStorageValue] = useState<string | null>(null)
   const [secureValue, setSecureValue] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [notifStatus, setNotifStatus] = useState<string>('not requested')
+  const [lastNotif, setLastNotif] = useState<string>('none')
   const queryClient = useQueryClient()
 
   const formSchema = z.object({
@@ -103,6 +106,49 @@ export default function TabTwoScreen() {
   const readSecureStore = async () => {
     const value = await SecureStore.getItemAsync(secureKey)
     setSecureValue(value)
+  }
+
+  useEffect(() => {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    })
+
+    const subscription = Notifications.addNotificationReceivedListener((notification) => {
+      const title = notification.request.content.title ?? 'No title'
+      const body = notification.request.content.body ?? ''
+      setLastNotif(`${title}${body ? `: ${body}` : ''}`)
+    })
+
+    return () => {
+      subscription.remove()
+    }
+  }, [])
+
+  const requestNotifPermission = async () => {
+    const permissions = await Notifications.requestPermissionsAsync()
+    const status = (permissions as { status?: string }).status ?? 'unknown'
+    setNotifStatus(status)
+  }
+
+  const scheduleLocalNotification = async () => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Hello from Expo Notifications',
+        body: 'This is a local notification demo.',
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 2,
+        repeats: false,
+      },
+    })
+    setLastNotif('scheduled (2s)')
   }
 
   return (
@@ -211,6 +257,18 @@ export default function TabTwoScreen() {
           <Text color="$gray11">
             Result: {mockProfile ? `${mockProfile.email} (${mockProfile.plan})` : 'none'}
           </Text>
+        </YStack>
+        <Separator />
+        <YStack gap="$3" w="100%" maw={360}>
+          <Text fontSize={18} color="$color">
+            Notifications demo
+          </Text>
+          <Button onPress={requestNotifPermission}>Request permission</Button>
+          <Button onPress={scheduleLocalNotification} variant="outlined">
+            Schedule local notification (2s)
+          </Button>
+          <Text color="$gray11">Permission: {notifStatus}</Text>
+          <Text color="$gray11">Last notification: {lastNotif}</Text>
         </YStack>
       </View>
     </ScrollView>
