@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons'
 import { ExternalLink } from '@tamagui/lucide-icons'
 import { ToastControl } from 'components/CurrentToast'
 import Constants from 'expo-constants'
@@ -37,7 +38,10 @@ export default function TabOneScreen() {
 
   return (
     <YStack flex={1} items="center" gap="$8" px="$10" pt="$5" bg="$background">
-      <H2>Tamagui + Expo</H2>
+      <XStack ai="center" gap="$2">
+        <Ionicons name="rocket-outline" size={24} color="#5EEAD4" />
+        <H2>Tamagui + Expo</H2>
+      </XStack>
 
       <ToastControl />
 

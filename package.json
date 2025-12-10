@@ -26,9 +26,16 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.3",
+    "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "^8.5.1",
+    "@react-native-community/slider": "^5.1.1",
     "@react-navigation/native": "^7.1.6",
     "@shopify/react-native-skia": "2.2.12",
+    "@storybook/addon-ondevice-actions": "^10.1.0",
+    "@storybook/addon-ondevice-controls": "^10.1.0",
+    "@storybook/react-native": "^10.1.0",
     "@supabase/supabase-js": "^2.86.2",
     "@tamagui/avatar": "^1.139.2",
     "@tamagui/button": "^1.139.2",
@@ -47,6 +54,7 @@
     "@tamagui/toast": "^1.139.2",
     "@tanstack/query-core": "^5.90.12",
     "@tanstack/react-query": "^5.90.12",
+    "babel-loader": "^8.4.1",
     "babel-preset-expo": "~54.0.0",
     "burnt": "^0.12.2",
     "expo": "^54.0.23",
@@ -74,16 +82,9 @@
     "react-native-svg": "15.12.1",
     "react-native-web": "^0.21.0",
     "react-native-worklets": "0.5.1",
+    "storybook": "10.2.0-alpha.3",
     "tamagui": "^1.139.2",
-    "zod": "^4.1.13",
-    "babel-loader": "^8.4.1",
-    "@react-native-community/datetimepicker": "^8.5.1",
-    "@react-native-community/slider": "^5.1.1",
-    "@gorhom/bottom-sheet": "^5.2.8",
-    "@storybook/addon-ondevice-controls": "^10.1.0",
-    "@storybook/addon-ondevice-actions": "^10.1.0",
-    "@storybook/react-native": "^10.1.0",
-    "storybook": "10.2.0-alpha.3"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@babel/core": "^7.24.6",
