@@ -5,7 +5,8 @@ import Constants from 'expo-constants'
 import * as Device from 'expo-device'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
-import { useEffect } from 'react'
+import { Accelerometer } from 'expo-sensors'
+import { useEffect, useState } from 'react'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -19,6 +20,7 @@ import StorybookUIRoot from '../../storybook'
 
 export default function TabOneScreen() {
   const spin = useSharedValue(0)
+  const [accel, setAccel] = useState<{ x: number; y: number; z: number } | null>(null)
 
   useEffect(() => {
     spin.value = withRepeat(
@@ -27,6 +29,14 @@ export default function TabOneScreen() {
       true
     )
   }, [spin])
+
+  useEffect(() => {
+    Accelerometer.setUpdateInterval(500)
+    const sub = Accelerometer.addListener((measurement) => {
+      setAccel(measurement)
+    })
+    return () => sub.remove()
+  }, [])
 
   const spinStyle = useAnimatedStyle(() => ({
     transform: [
@@ -90,6 +100,21 @@ export default function TabOneScreen() {
         </SizableText>
         <SizableText size="$3" color="$gray11">
           deviceType: {Device.deviceType ?? 'n/a'}
+        </SizableText>
+      </YStack>
+
+      <YStack gap="$2" ai="center">
+        <SizableText size="$4" color="$color">
+          Sensors (accelerometer)
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          x: {accel ? accel.x.toFixed(2) : '...'}
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          y: {accel ? accel.y.toFixed(2) : '...'}
+        </SizableText>
+        <SizableText size="$3" color="$gray11">
+          z: {accel ? accel.z.toFixed(2) : '...'}
         </SizableText>
       </YStack>
 
