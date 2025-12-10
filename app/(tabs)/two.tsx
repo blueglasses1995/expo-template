@@ -1,4 +1,3 @@
-import type * as AppIntegrityType from '@expo/app-integrity'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as LocalAuthentication from 'expo-local-authentication'
@@ -30,18 +29,7 @@ export default function TabTwoScreen() {
   const [authResult, setAuthResult] = useState<string>('not tested')
   const [orientation, setOrientation] = useState<string>('unknown')
   const [locked, setLocked] = useState<string>('unlocked')
-  const [integritySupport, setIntegritySupport] = useState<string>('unknown')
-  const [hardwareIntegrity, setHardwareIntegrity] = useState<string>('unknown')
   const queryClient = useQueryClient()
-
-  const getAppIntegrity = (): typeof AppIntegrityType | null => {
-    try {
-      const mod = require('@expo/app-integrity') as typeof AppIntegrityType
-      return mod
-    } catch {
-      return null
-    }
-  }
 
   const formSchema = z.object({
     email: z.string().email(),
@@ -203,33 +191,6 @@ export default function TabTwoScreen() {
       setAuthResult(`error: ${result.error}`)
     } else {
       setAuthResult('cancelled')
-    }
-  }
-
-  useEffect(() => {
-    const mod = getAppIntegrity()
-    if (!mod) {
-      setIntegritySupport('unavailable (not in Expo Go)')
-      return
-    }
-    setIntegritySupport(mod.isSupported ? 'supported' : 'not supported')
-  }, [])
-
-  const checkHardwareIntegrity = async () => {
-    const mod = getAppIntegrity()
-    if (!mod) {
-      setHardwareIntegrity('unavailable (not in Expo Go)')
-      return
-    }
-    if (Platform.OS !== 'android') {
-      setHardwareIntegrity('n/a (android only)')
-      return
-    }
-    try {
-      const supported = await mod.isHardwareAttestationSupportedAsync()
-      setHardwareIntegrity(supported ? 'supported' : 'not supported')
-    } catch (e) {
-      setHardwareIntegrity(`error: ${String(e)}`)
     }
   }
 
@@ -402,17 +363,6 @@ export default function TabTwoScreen() {
           </Button>
           <Text color="$gray11">Current: {orientation}</Text>
           <Text color="$gray11">Lock: {locked}</Text>
-        </YStack>
-        <Separator />
-        <YStack gap="$3" w="100%" maw={360}>
-          <Text fontSize={18} color="$color">
-            App integrity demo
-          </Text>
-          <Text color="$gray11">iOS App Attest: {integritySupport}</Text>
-          <Button onPress={checkHardwareIntegrity}>
-            Check Android hardware attestation
-          </Button>
-          <Text color="$gray11">Android hardware: {hardwareIntegrity}</Text>
         </YStack>
       </View>
     </ScrollView>
