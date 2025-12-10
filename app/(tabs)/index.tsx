@@ -6,7 +6,6 @@ import * as Device from 'expo-device'
 import * as Haptics from 'expo-haptics'
 import { Image } from 'expo-image'
 import { Accelerometer } from 'expo-sensors'
-import * as Updates from 'expo-updates'
 import { useEffect, useState } from 'react'
 import Animated, {
   Easing,
@@ -17,12 +16,10 @@ import Animated, {
 } from 'react-native-reanimated'
 import Svg, { Circle } from 'react-native-svg'
 import { Anchor, H2, Paragraph, SizableText, XStack, YStack } from 'tamagui'
-import StorybookUIRoot from '../../storybook'
 
 export default function TabOneScreen() {
   const spin = useSharedValue(0)
   const [accel, setAccel] = useState<{ x: number; y: number; z: number } | null>(null)
-  const [updateInfo, setUpdateInfo] = useState<string>('not checked')
 
   useEffect(() => {
     spin.value = withRepeat(
@@ -88,38 +85,6 @@ export default function TabOneScreen() {
         <SizableText size="$3" color="$gray11">
           expoVersion: {Constants.expoVersion ?? 'n/a'}
         </SizableText>
-      </YStack>
-
-      <YStack gap="$2" ai="center">
-        <SizableText size="$4" color="$color">
-          Updates (runtime info)
-        </SizableText>
-        <Paragraph color="$gray11" ta="center">
-          channel: {Updates.channel || 'n/a'}
-        </Paragraph>
-        <Paragraph color="$gray11" ta="center">
-          runtime: {Updates.runtimeVersion || 'n/a'}
-        </Paragraph>
-        <Paragraph color="$gray11" ta="center">
-          status: {updateInfo}
-        </Paragraph>
-        <Anchor
-          href="#"
-          color="$blue10"
-          onPress={async () => {
-            try {
-              const update = await Updates.checkForUpdateAsync()
-              setUpdateInfo(
-                update.isAvailable ? 'update available (not downloaded)' : 'up to date'
-              )
-            } catch (e) {
-              setUpdateInfo(`error: ${String(e)}`)
-            }
-            return false
-          }}
-        >
-          check for updates
-        </Anchor>
       </YStack>
 
       <YStack gap="$2" ai="center">
@@ -230,13 +195,6 @@ export default function TabOneScreen() {
           to configure your themes and tokens.
         </Paragraph>
       </XStack>
-
-      <YStack gap="$3" ai="center" w="100%">
-        <SizableText size="$4" color="$color">
-          Storybook (embedded)
-        </SizableText>
-        <StorybookUIRoot />
-      </YStack>
     </YStack>
   )
 }
