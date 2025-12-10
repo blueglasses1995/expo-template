@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import * as LocalAuthentication from 'expo-local-authentication'
 import * as Notifications from 'expo-notifications'
 import * as SecureStore from 'expo-secure-store'
 import { useEffect, useMemo, useState } from 'react'
@@ -21,6 +22,10 @@ export default function TabTwoScreen() {
   const [busy, setBusy] = useState(false)
   const [notifStatus, setNotifStatus] = useState<string>('not requested')
   const [lastNotif, setLastNotif] = useState<string>('none')
+  const [authSupported, setAuthSupported] = useState<string>('unknown')
+  const [authEnrolled, setAuthEnrolled] = useState<string>('unknown')
+  const [authTypes, setAuthTypes] = useState<string>('n/a')
+  const [authResult, setAuthResult] = useState<string>('not tested')
   const queryClient = useQueryClient()
 
   const formSchema = z.object({
@@ -151,6 +156,41 @@ export default function TabTwoScreen() {
     setLastNotif('scheduled (2s)')
   }
 
+  const formatAuthTypes = (types: number[]) => {
+    const map: Record<number, string> = {
+      [LocalAuthentication.AuthenticationType.FINGERPRINT]: 'fingerprint',
+      [LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION]: 'face',
+      [LocalAuthentication.AuthenticationType.IRIS]: 'iris',
+    }
+    const names = types.map((t) => map[t] ?? `type-${t}`)
+    return names.length ? names.join(', ') : 'none'
+  }
+
+  const checkAuthSupport = async () => {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync()
+    const enrolled = await LocalAuthentication.isEnrolledAsync()
+    const types = await LocalAuthentication.supportedAuthenticationTypesAsync()
+    setAuthSupported(hasHardware ? 'available' : 'unavailable')
+    setAuthEnrolled(enrolled ? 'enrolled' : 'not enrolled')
+    setAuthTypes(formatAuthTypes(types))
+  }
+
+  const authenticate = async () => {
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Authenticate',
+      fallbackLabel: 'Enter passcode',
+      cancelLabel: 'Cancel',
+      disableDeviceFallback: false,
+    })
+    if (result.success) {
+      setAuthResult('success')
+    } else if (result.error) {
+      setAuthResult(`error: ${result.error}`)
+    } else {
+      setAuthResult('cancelled')
+    }
+  }
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: 'transparent' }}
@@ -269,6 +309,20 @@ export default function TabTwoScreen() {
           </Button>
           <Text color="$gray11">Permission: {notifStatus}</Text>
           <Text color="$gray11">Last notification: {lastNotif}</Text>
+        </YStack>
+        <Separator />
+        <YStack gap="$3" w="100%" maw={360}>
+          <Text fontSize={18} color="$color">
+            Local authentication demo
+          </Text>
+          <Button onPress={checkAuthSupport}>Check availability</Button>
+          <Button onPress={authenticate} variant="outlined">
+            Authenticate
+          </Button>
+          <Text color="$gray11">Hardware: {authSupported}</Text>
+          <Text color="$gray11">Enrollment: {authEnrolled}</Text>
+          <Text color="$gray11">Types: {authTypes}</Text>
+          <Text color="$gray11">Last result: {authResult}</Text>
         </YStack>
       </View>
     </ScrollView>
