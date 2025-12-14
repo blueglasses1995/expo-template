@@ -4,6 +4,7 @@ import {
   Folder,
   Image,
   ListFilter,
+  Lock,
   Shield,
   Wrench,
 } from '@tamagui/lucide-icons'
@@ -106,6 +107,13 @@ export default function TabLayout() {
         options={{
           title: 'Privacy',
           tabBarIcon: ({ color }: { color: string }) => <Shield color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="permissions"
+        options={{
+          title: 'CASL',
+          tabBarIcon: ({ color }: { color: string }) => <Lock color={color} />,
         }}
       />
       <Tabs.Screen

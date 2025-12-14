@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import { TamaguiProvider, type TamaguiProviderProps } from 'tamagui'
 import { convex } from '../lib/convex'
 import { config } from '../tamagui.config'
+import { AbilityProvider } from './AbilityProvider'
 import { AuthProvider } from './AuthProvider'
 import { CurrentToast } from './CurrentToast'
 
@@ -26,20 +27,22 @@ export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'conf
       <ConvexWrapper>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <ToastProvider
-              swipeDirection="horizontal"
-              duration={6000}
-              native={
-                [
-                  // uncomment the next line to do native toasts on mobile. NOTE: it'll require you making a dev build and won't work with Expo Go
-                  // 'mobile'
-                ]
-              }
-            >
-              {children}
-              <CurrentToast />
-              <ToastViewport top="$8" left={0} right={0} />
-            </ToastProvider>
+            <AbilityProvider>
+              <ToastProvider
+                swipeDirection="horizontal"
+                duration={6000}
+                native={
+                  [
+                    // uncomment the next line to do native toasts on mobile. NOTE: it'll require you making a dev build and won't work with Expo Go
+                    // 'mobile'
+                  ]
+                }
+              >
+                {children}
+                <CurrentToast />
+                <ToastViewport top="$8" left={0} right={0} />
+              </ToastProvider>
+            </AbilityProvider>
           </AuthProvider>
         </QueryClientProvider>
       </ConvexWrapper>

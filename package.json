@@ -27,6 +27,8 @@
   },
   "dependencies": {
     "@better-auth/expo": "1.3.34",
+    "@casl/ability": "^6.7.3",
+    "@casl/react": "^5.0.0",
     "@convex-dev/better-auth": "^0.9.11",
     "@datadog/mobile-react-native": "^2.14.0",
     "@expo/fingerprint": "~0.15.4",
