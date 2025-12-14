@@ -55,11 +55,11 @@ export default function UtilsTab() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: '#000' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        style={{ flex: 1, backgroundColor: 'transparent' }}
+        style={{ flex: 1, backgroundColor: '#000' }}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingVertical: 20,

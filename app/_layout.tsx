@@ -1,6 +1,7 @@
+// Crypto polyfill must be imported first (before any library that depends on crypto)
+import 'lib/crypto-polyfill'
 import 'react-native-gesture-handler'
 import { useEffect } from 'react'
-import { useColorScheme } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -34,6 +35,19 @@ export default function RootLayout() {
     InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
   })
 
+  // Datadog初期化（Expo Goでは自動的にスキップ）
+  useEffect(() => {
+    const initDatadog = async () => {
+      try {
+        const { initializeDatadog } = await import('lib/datadog')
+        await initializeDatadog()
+      } catch (error) {
+        console.log('[Datadog] Init skipped:', error)
+      }
+    }
+    initDatadog()
+  }, [])
+
   useEffect(() => {
     if (interLoaded || interError) {
       // Hide the splash screen after the fonts have loaded (or an error was returned) and the UI is ready.
@@ -63,11 +77,11 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
 )
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme()
   const theme = useTheme()
   return (
     <>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      {/* 常にダークテーマなのでステータスバーは白文字 */}
+      <StatusBar style="light" />
       <Stack>
         <Stack.Screen
           name="(tabs)"
@@ -85,7 +99,7 @@ function RootLayoutNav() {
             gestureEnabled: true,
             gestureDirection: 'horizontal',
             contentStyle: {
-              backgroundColor: theme.background.val,
+              backgroundColor: '#000',
             },
           }}
         />

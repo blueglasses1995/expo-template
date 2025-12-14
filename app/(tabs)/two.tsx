@@ -1,12 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import Constants from 'expo-constants'
 import * as LocalAuthentication from 'expo-local-authentication'
-import * as Notifications from 'expo-notifications'
 import * as ScreenOrientation from 'expo-screen-orientation'
 import * as SecureStore from 'expo-secure-store'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Platform, ScrollView } from 'react-native'
+import { ScrollView } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   useAnimatedStyle,
@@ -16,12 +16,17 @@ import Animated, {
 import { Button, Input, Separator, Text, View, YStack } from 'tamagui'
 import { z } from 'zod'
 
+// Expo Goかどうかを判定
+const isExpoGo = Constants.appOwnership === 'expo'
+
 export default function TabTwoScreen() {
   const presses = useSharedValue(0)
   const [storageValue, setStorageValue] = useState<string | null>(null)
   const [secureValue, setSecureValue] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [notifStatus, setNotifStatus] = useState<string>('not requested')
+  const [notifStatus, setNotifStatus] = useState<string>(
+    isExpoGo ? 'unavailable (Expo Go)' : 'not requested'
+  )
   const [lastNotif, setLastNotif] = useState<string>('none')
   const [authSupported, setAuthSupported] = useState<string>('unknown')
   const [authEnrolled, setAuthEnrolled] = useState<string>('unknown')
@@ -30,6 +35,8 @@ export default function TabTwoScreen() {
   const [orientation, setOrientation] = useState<string>('unknown')
   const [locked, setLocked] = useState<string>('unlocked')
   const queryClient = useQueryClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const notificationsRef = useRef<any>(null)
 
   const formSchema = z.object({
     email: z.string().email(),
@@ -116,47 +123,84 @@ export default function TabTwoScreen() {
     setSecureValue(value)
   }
 
+  // Notifications を動的インポート（Expo Go では利用不可）
   useEffect(() => {
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: false,
-        shouldSetBadge: false,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      }),
-    })
+    if (isExpoGo) {
+      console.log('[Notifications] Skipped: Running in Expo Go')
+      return
+    }
 
-    const subscription = Notifications.addNotificationReceivedListener((notification) => {
-      const title = notification.request.content.title ?? 'No title'
-      const body = notification.request.content.body ?? ''
-      setLastNotif(`${title}${body ? `: ${body}` : ''}`)
-    })
+    let subscription: { remove: () => void } | null = null
+
+    const initNotifications = async () => {
+      try {
+        const Notifications = await import('expo-notifications')
+        notificationsRef.current = Notifications
+
+        Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: false,
+            shouldSetBadge: false,
+            shouldShowBanner: true,
+            shouldShowList: true,
+          }),
+        })
+
+        subscription = Notifications.addNotificationReceivedListener((notification) => {
+          const title = notification.request.content.title ?? 'No title'
+          const body = notification.request.content.body ?? ''
+          setLastNotif(`${title}${body ? `: ${body}` : ''}`)
+        })
+      } catch (error) {
+        console.warn('[Notifications] Failed to initialize:', error)
+      }
+    }
+
+    initNotifications()
 
     return () => {
-      subscription.remove()
+      subscription?.remove()
     }
   }, [])
 
   const requestNotifPermission = async () => {
-    const permissions = await Notifications.requestPermissionsAsync()
-    const status = (permissions as { status?: string }).status ?? 'unknown'
-    setNotifStatus(status)
+    if (isExpoGo || !notificationsRef.current) {
+      setNotifStatus('unavailable (Expo Go)')
+      return
+    }
+    try {
+      const Notifications = notificationsRef.current
+      const permissions = await Notifications.requestPermissionsAsync()
+      const status = (permissions as { status?: string }).status ?? 'unknown'
+      setNotifStatus(status)
+    } catch (error) {
+      setNotifStatus(`error: ${String(error)}`)
+    }
   }
 
   const scheduleLocalNotification = async () => {
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: 'Hello from Expo Notifications',
-        body: 'This is a local notification demo.',
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: 2,
-        repeats: false,
-      },
-    })
-    setLastNotif('scheduled (2s)')
+    if (isExpoGo || !notificationsRef.current) {
+      setLastNotif('unavailable (Expo Go)')
+      return
+    }
+    try {
+      const Notifications = notificationsRef.current
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Hello from Expo Notifications',
+          body: 'This is a local notification demo.',
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: 2,
+          repeats: false,
+        },
+      })
+      setLastNotif('scheduled (2s)')
+    } catch (error) {
+      setLastNotif(`error: ${String(error)}`)
+    }
   }
 
   const formatAuthTypes = (types: number[]) => {
@@ -219,7 +263,7 @@ export default function TabTwoScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: 'transparent' }}
+      style={{ flex: 1, backgroundColor: '#000' }}
       contentContainerStyle={{
         paddingHorizontal: 16,
         paddingVertical: 20,

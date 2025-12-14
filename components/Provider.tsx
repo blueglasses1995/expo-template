@@ -1,7 +1,6 @@
 import { ToastProvider, ToastViewport } from '@tamagui/toast'
 import { QueryClient } from '@tanstack/query-core'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { useColorScheme } from 'react-native'
 import { TamaguiProvider, type TamaguiProviderProps } from 'tamagui'
 import { config } from '../tamagui.config'
 import { CurrentToast } from './CurrentToast'
@@ -9,14 +8,9 @@ import { CurrentToast } from './CurrentToast'
 const queryClient = new QueryClient()
 
 export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'config'>) {
-  const colorScheme = useColorScheme()
-
+  // 常にダークテーマを使用（全画面黒背景）
   return (
-    <TamaguiProvider
-      config={config}
-      defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
-      {...rest}
-    >
+    <TamaguiProvider config={config} defaultTheme="dark" {...rest}>
       <QueryClientProvider client={queryClient}>
         <ToastProvider
           swipeDirection="horizontal"

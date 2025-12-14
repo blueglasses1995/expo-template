@@ -52,7 +52,7 @@ export default function MediaTab() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: 'transparent' }}
+      style={{ flex: 1, backgroundColor: '#000' }}
       contentContainerStyle={{
         paddingHorizontal: 16,
         paddingVertical: 20,
@@ -79,12 +79,7 @@ export default function MediaTab() {
           🎬 Video Player
         </Text>
         <YStack h={220} w="100%" br="$4" overflow="hidden" bg="$gray2">
-          <VideoView
-            player={videoPlayer}
-            style={{ flex: 1 }}
-            allowsFullscreen
-            allowsPictureInPicture
-          />
+          <VideoView player={videoPlayer} style={{ flex: 1 }} allowsPictureInPicture />
         </YStack>
         <XStack gap="$2">
           <Button flex={1} onPress={toggleVideo}>

@@ -57,7 +57,7 @@ export default function TabOneScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: 'transparent' }}
+      style={{ flex: 1, backgroundColor: '#000' }}
       contentContainerStyle={{
         paddingHorizontal: 24,
         paddingVertical: 20,

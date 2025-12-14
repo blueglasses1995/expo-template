@@ -4,7 +4,7 @@ import StorybookUIRoot from '../../storybook'
 
 export default function TabFourScreen() {
   return (
-    <YStack flex={1} gap="$4" px="$6" pt="$5" bg="$background">
+    <YStack flex={1} gap="$4" px="$6" pt="$5" backgroundColor="#000">
       <YStack gap="$2" ai="center">
         <Ionicons name="construct-outline" size={28} color="#5EEAD4" />
         <H2>Storybook</H2>

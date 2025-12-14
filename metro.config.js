@@ -10,7 +10,13 @@ const config = getDefaultConfig(__dirname, {
   isCSSEnabled: true,
 })
 
-config.resolver.sourceExts.push('mjs')
+// rxdb workaround: prioritize .mjs over .ts for plugins
+// rxdb v16 has index.ts files that re-export types, which Metro can't process
+const sourceExts = config.resolver.sourceExts.filter(
+  (ext) => ext !== 'ts' && ext !== 'tsx'
+)
+sourceExts.unshift('mjs', 'ts', 'tsx') // mjs first, then ts/tsx
+config.resolver.sourceExts = sourceExts
 
 module.exports = withTamagui(config, {
   components: ['tamagui'],

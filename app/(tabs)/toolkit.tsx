@@ -196,7 +196,7 @@ export default function ToolkitTab() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: 'transparent' }}
+      style={{ flex: 1, backgroundColor: '#000' }}
       contentContainerStyle={{
         paddingHorizontal: 16,
         paddingVertical: 20,

@@ -19,7 +19,7 @@ export default function SkiaDemo() {
   return (
     <YStack
       flex={1}
-      bg="$background"
+      backgroundColor="#000"
       alignItems="center"
       justifyContent="center"
       gap="$4"
