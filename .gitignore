@@ -46,6 +46,9 @@ node_modules
 .expo
 ios
 android
+
+# Convex
+convex/_generated
 /.rnstorybook/storybook.requires.ts
 
 *storybook.log

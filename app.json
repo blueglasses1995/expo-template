@@ -45,6 +45,7 @@
       ],
       "expo-web-browser",
       "expo-secure-store",
+      "expo-apple-authentication",
       "expo-asset",
       "expo-localization",
       "expo-sqlite",
