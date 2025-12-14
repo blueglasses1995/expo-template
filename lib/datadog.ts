@@ -1,12 +1,7 @@
-import Constants from 'expo-constants'
+import Constants, { ExecutionEnvironment } from 'expo-constants'
 
-// Expo Goかどうかを判定（安全にフォールバック）
-let isExpoGo = true
-try {
-  isExpoGo = Constants.appOwnership === 'expo'
-} catch {
-  isExpoGo = true // 判定できない場合は安全側に倒す
-}
+// Expo Go かどうかを判定（インポート前にチェック）
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient
 
 // Datadog設定（環境変数から取得するか、ここで設定）
 const DATADOG_CONFIG = {

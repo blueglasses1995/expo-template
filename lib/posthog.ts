@@ -8,17 +8,33 @@
  * ⚠️ Expo Go では動作しません。Development Build が必要です。
  */
 
-import type { PostHog } from 'posthog-react-native'
+import Constants, { ExecutionEnvironment } from 'expo-constants'
+
+// Expo Go かどうかを判定（インポート前にチェック）
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient
+
+// PostHogインスタンスの型（動的インポートのため any を使用）
+// biome-ignore lint/suspicious/noExplicitAny: PostHog SDK の型定義が不完全なため
+type PostHogInstance = any
 
 // 遅延ロード用のPostHogインスタンス
-let posthogInstance: PostHog | null = null
+let posthogInstance: PostHogInstance | null = null
 let isInitialized = false
 
 /**
  * PostHog インスタンスを遅延取得
- * Expo Go で動作時はエラーをキャッチして null を返す
+ * Expo Go で動作時はインポートをスキップして null を返す
  */
-export async function getPostHog(): Promise<PostHog | null> {
+export async function getPostHog(): Promise<PostHogInstance | null> {
+	// Expo Go の場合はそもそもインポートを試みない
+	if (isExpoGo) {
+		if (!isInitialized) {
+			console.log('[PostHog] Skipped: Running in Expo Go')
+			isInitialized = true
+		}
+		return null
+	}
+
 	if (posthogInstance) return posthogInstance
 	if (isInitialized) return null // 初期化済みだが失敗した場合
 
@@ -31,13 +47,14 @@ export async function getPostHog(): Promise<PostHog | null> {
 
 	try {
 		const { PostHog } = await import('posthog-react-native')
-		posthogInstance = new PostHog(apiKey, {
+		// biome-ignore lint/suspicious/noExplicitAny: PostHog SDK の型定義が不完全なため
+		posthogInstance = new (PostHog as any)(apiKey, {
 			host: 'https://us.i.posthog.com', // EU の場合は 'https://eu.i.posthog.com'
 		})
 		isInitialized = true
 		return posthogInstance
-	} catch (error) {
-		console.log('[PostHog] PostHog is not available (Expo Go?)')
+	} catch {
+		console.log('[PostHog] PostHog is not available')
 		isInitialized = true
 		return null
 	}

@@ -9,7 +9,11 @@
  * ⚠️ Expo Go では動作しません。Development Build が必要です。
  */
 
+import Constants, { ExecutionEnvironment } from 'expo-constants'
 import type analytics from '@react-native-firebase/analytics'
+
+// Expo Go かどうかを判定（インポート前にチェック）
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient
 
 // 遅延ロード用のモジュール参照
 let analyticsModule: typeof analytics | null = null
@@ -17,9 +21,18 @@ let isAvailable: boolean | null = null
 
 /**
  * Analytics モジュールを遅延取得
- * Expo Go で動作時はエラーをキャッチして null を返す
+ * Expo Go で動作時はインポートをスキップして null を返す
  */
 async function getAnalytics() {
+  // Expo Go の場合はそもそもインポートを試みない
+  if (isExpoGo) {
+    if (isAvailable === null) {
+      console.log('[Analytics] Skipped: Running in Expo Go')
+      isAvailable = false
+    }
+    return null
+  }
+
   // 一度利用不可と判定されたらスキップ
   if (isAvailable === false) return null
   if (analyticsModule) return analyticsModule
@@ -28,13 +41,13 @@ async function getAnalytics() {
     const module = await import('@react-native-firebase/analytics')
     // ネイティブモジュールが存在するかテスト
     const instance = module.default()
-    // アプリインスタンスIDを取得してテスト（エラーが出ればExpo Go）
+    // アプリインスタンスIDを取得してテスト（エラーが出れば未設定）
     await instance.getAppInstanceId()
     analyticsModule = module.default
     isAvailable = true
     return analyticsModule
   } catch {
-    console.log('[Analytics] Skipped: Running in Expo Go or not configured')
+    console.log('[Analytics] Skipped: Firebase not configured')
     isAvailable = false
     return null
   }
