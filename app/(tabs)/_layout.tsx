@@ -1,4 +1,4 @@
-import { Atom, AudioWaveform } from '@tamagui/lucide-icons'
+import { Atom, AudioWaveform, Folder } from '@tamagui/lucide-icons'
 import { Link, Tabs } from 'expo-router'
 import { Button, useTheme } from 'tamagui'
 
@@ -53,6 +53,20 @@ export default function TabLayout() {
         options={{
           title: 'Updates',
           tabBarIcon: ({ color }: { color: string }) => <AudioWaveform color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="toolkit"
+        options={{
+          title: 'Toolkit',
+          tabBarIcon: ({ color }: { color: string }) => <Atom color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="toolkit2"
+        options={{
+          title: 'Toolkit2',
+          tabBarIcon: ({ color }: { color: string }) => <Folder color={color} />,
         }}
       />
       <Tabs.Screen
