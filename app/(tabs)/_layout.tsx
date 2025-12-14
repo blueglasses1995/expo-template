@@ -5,6 +5,7 @@ import {
   Image,
   ListFilter,
   Lock,
+  RefreshCw,
   Shield,
   Wrench,
 } from '@tamagui/lucide-icons'
@@ -114,6 +115,13 @@ export default function TabLayout() {
         options={{
           title: 'CASL',
           tabBarIcon: ({ color }: { color: string }) => <Lock color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="rxjs"
+        options={{
+          title: 'RxJS',
+          tabBarIcon: ({ color }: { color: string }) => <RefreshCw color={color} />,
         }}
       />
       <Tabs.Screen
