@@ -58,8 +58,10 @@ export default function MediaTab() {
         paddingVertical: 20,
         gap: 18,
         alignItems: 'center',
-        paddingBottom: 120,
+        paddingBottom: 180,
       }}
+      showsVerticalScrollIndicator
+      nestedScrollEnabled
     >
       <YStack ai="center" gap="$2">
         <Ionicons name="play-circle-outline" size={28} color="#A78BFA" />

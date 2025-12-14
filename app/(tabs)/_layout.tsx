@@ -1,4 +1,12 @@
-import { Atom, AudioWaveform, Folder, Image, Shield, Wrench } from '@tamagui/lucide-icons'
+import {
+  Atom,
+  AudioWaveform,
+  Folder,
+  Image,
+  ListFilter,
+  Shield,
+  Wrench,
+} from '@tamagui/lucide-icons'
 import { Link, Tabs } from 'expo-router'
 import { Button, useTheme } from 'tamagui'
 
@@ -81,6 +89,13 @@ export default function TabLayout() {
         options={{
           title: 'Utils',
           tabBarIcon: ({ color }: { color: string }) => <Wrench color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="pickers"
+        options={{
+          title: 'Pickers',
+          tabBarIcon: ({ color }: { color: string }) => <ListFilter color={color} />,
         }}
       />
       <Tabs.Screen
