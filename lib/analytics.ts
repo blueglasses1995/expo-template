@@ -13,20 +13,29 @@ import type analytics from '@react-native-firebase/analytics'
 
 // 遅延ロード用のモジュール参照
 let analyticsModule: typeof analytics | null = null
+let isAvailable: boolean | null = null
 
 /**
  * Analytics モジュールを遅延取得
  * Expo Go で動作時はエラーをキャッチして null を返す
  */
 async function getAnalytics() {
+  // 一度利用不可と判定されたらスキップ
+  if (isAvailable === false) return null
   if (analyticsModule) return analyticsModule
 
   try {
     const module = await import('@react-native-firebase/analytics')
+    // ネイティブモジュールが存在するかテスト
+    const instance = module.default()
+    // アプリインスタンスIDを取得してテスト（エラーが出ればExpo Go）
+    await instance.getAppInstanceId()
     analyticsModule = module.default
+    isAvailable = true
     return analyticsModule
-  } catch (error) {
-    console.log('[Analytics] Firebase Analytics is not available (Expo Go?)')
+  } catch {
+    console.log('[Analytics] Skipped: Running in Expo Go or not configured')
+    isAvailable = false
     return null
   }
 }
@@ -35,13 +44,17 @@ async function getAnalytics() {
  * スクリーン閲覧をログ
  */
 export async function logScreenView(screenName: string, screenClass?: string) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().logScreenView({
-    screen_name: screenName,
-    screen_class: screenClass ?? screenName,
-  })
+    await analytics().logScreenView({
+      screen_name: screenName,
+      screen_class: screenClass ?? screenName,
+    })
+  } catch {
+    // silently ignore
+  }
 }
 
 /**
@@ -51,50 +64,70 @@ export async function logEvent(
   eventName: string,
   params?: Record<string, unknown>,
 ) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().logEvent(eventName, params)
+    await analytics().logEvent(eventName, params)
+  } catch {
+    // silently ignore
+  }
 }
 
 /**
  * ユーザープロパティを設定
  */
 export async function setUserProperty(name: string, value: string) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().setUserProperty(name, value)
+    await analytics().setUserProperty(name, value)
+  } catch {
+    // silently ignore
+  }
 }
 
 /**
  * ユーザーIDを設定
  */
 export async function setUserId(userId: string | null) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().setUserId(userId)
+    await analytics().setUserId(userId)
+  } catch {
+    // silently ignore
+  }
 }
 
 /**
  * ログインイベント
  */
 export async function logLogin(method: string) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().logLogin({ method })
+    await analytics().logLogin({ method })
+  } catch {
+    // silently ignore
+  }
 }
 
 /**
  * サインアップイベント
  */
 export async function logSignUp(method: string) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().logSignUp({ method })
+    await analytics().logSignUp({ method })
+  } catch {
+    // silently ignore
+  }
 }
 
 /**
@@ -105,20 +138,28 @@ export async function logPurchase(params: {
   value: number
   items?: Array<{ item_id: string; item_name: string }>
 }) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().logPurchase(params)
+    await analytics().logPurchase(params)
+  } catch {
+    // silently ignore
+  }
 }
 
 /**
  * 検索イベント
  */
 export async function logSearch(searchTerm: string) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().logSearch({ search_term: searchTerm })
+    await analytics().logSearch({ search_term: searchTerm })
+  } catch {
+    // silently ignore
+  }
 }
 
 /**
@@ -129,22 +170,30 @@ export async function logShare(
   itemId: string,
   method: string,
 ) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().logShare({
-    content_type: contentType,
-    item_id: itemId,
-    method,
-  })
+    await analytics().logShare({
+      content_type: contentType,
+      item_id: itemId,
+      method,
+    })
+  } catch {
+    // silently ignore
+  }
 }
 
 /**
  * Analytics の有効/無効を切り替え（オプトアウト対応）
  */
 export async function setAnalyticsCollectionEnabled(enabled: boolean) {
-  const analytics = await getAnalytics()
-  if (!analytics) return
+  try {
+    const analytics = await getAnalytics()
+    if (!analytics) return
 
-  await analytics().setAnalyticsCollectionEnabled(enabled)
+    await analytics().setAnalyticsCollectionEnabled(enabled)
+  } catch {
+    // silently ignore
+  }
 }

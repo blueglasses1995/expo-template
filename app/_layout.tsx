@@ -52,6 +52,20 @@ export default function RootLayout() {
     trackScreen()
   }, [pathname, segments])
 
+  // PostHog 画面トラッキング（Expo Goでは自動的にスキップ）
+  useEffect(() => {
+    const trackScreen = async () => {
+      try {
+        const { screen } = await import('lib/posthog')
+        const screenName = segments.join('/') || 'index'
+        await screen(screenName)
+      } catch (error) {
+        // Expo Go では PostHog は動作しない
+      }
+    }
+    trackScreen()
+  }, [pathname, segments])
+
   // Datadog初期化（Expo Goでは自動的にスキップ）
   useEffect(() => {
     const initDatadog = async () => {
