@@ -15,14 +15,16 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.expotemplate"
+      "bundleIdentifier": "com.example.expotemplate",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.example.expotemplate"
+      "package": "com.example.expotemplate",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -52,7 +54,8 @@
       "expo-tracking-transparency",
       "expo-video",
       "expo-audio",
-      "expo-datadog"
+      "expo-datadog",
+      "@react-native-firebase/app"
     ],
     "experiments": {
       "typedRoutes": true

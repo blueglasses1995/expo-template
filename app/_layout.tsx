@@ -10,7 +10,7 @@ import '../tamagui-web.css'
 
 import { Provider } from 'components/Provider'
 import { useFonts } from 'expo-font'
-import { SplashScreen, Stack } from 'expo-router'
+import { SplashScreen, Stack, usePathname, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useTheme } from 'tamagui'
 
@@ -30,10 +30,27 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
+  const pathname = usePathname()
+  const segments = useSegments()
+
   const [interLoaded, interError] = useFonts({
     Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
     InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
   })
+
+  // Firebase Analytics 画面トラッキング（Expo Goでは自動的にスキップ）
+  useEffect(() => {
+    const trackScreen = async () => {
+      try {
+        const { logScreenView } = await import('lib/analytics')
+        const screenName = segments.join('/') || 'index'
+        await logScreenView(screenName)
+      } catch (error) {
+        // Expo Go では Firebase Analytics は動作しない
+      }
+    }
+    trackScreen()
+  }, [pathname, segments])
 
   // Datadog初期化（Expo Goでは自動的にスキップ）
   useEffect(() => {
