@@ -1,84 +1,53 @@
 import { Ionicons } from '@expo/vector-icons'
-import * as ImageManipulator from 'expo-image-manipulator'
-import * as ImagePicker from 'expo-image-picker'
-import { LinearGradient } from 'expo-linear-gradient'
-// expo-live-photo may not be available in Expo Go
-import type * as LivePhotoModule from 'expo-live-photo'
-import * as Localization from 'expo-localization'
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { ScrollView, useColorScheme } from 'react-native'
-import {
-  Button,
-  Image,
-  Paragraph,
-  Separator,
-  SizableText,
-  Text,
-  XStack,
-  YStack,
-} from 'tamagui'
-import '../../lib/i18n'
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio'
+import { useVideoPlayer, VideoView } from 'expo-video'
+import { useCallback, useRef, useState } from 'react'
+import { ScrollView } from 'react-native'
+import PagerView from 'react-native-pager-view'
+import { Button, Paragraph, Separator, SizableText, Text, XStack, YStack } from 'tamagui'
+
+// Sample media URLs
+const SAMPLE_VIDEO =
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+const SAMPLE_AUDIO = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
 
 export default function MediaTab() {
-  const colorScheme = useColorScheme()
-  const isDark = colorScheme === 'dark'
-  const { t, i18n } = useTranslation()
+  // Video player
+  const videoPlayer = useVideoPlayer(SAMPLE_VIDEO, (player) => {
+    player.loop = false
+  })
+  const [videoStatus, setVideoStatus] = useState('paused')
 
-  const [pickedImage, setPickedImage] = useState<string | null>(null)
-  const [manipulatedImage, setManipulatedImage] = useState<string | null>(null)
-  const [manipulating, setManipulating] = useState(false)
-  const [livePhotoAvailable, setLivePhotoAvailable] = useState<boolean | null>(null)
-  const [localeInfo, setLocaleInfo] = useState<string>('')
+  // Audio player
+  const audioPlayer = useAudioPlayer(SAMPLE_AUDIO)
+  const audioStatus = useAudioPlayerStatus(audioPlayer)
 
-  useEffect(() => {
-    // Check Live Photo availability (dynamic import – not in Expo Go)
-    import('expo-live-photo')
-      .then((mod: typeof LivePhotoModule) => mod.isAvailableAsync())
-      .then((available) => setLivePhotoAvailable(available))
-      .catch(() => setLivePhotoAvailable(false))
+  // Pager View
+  const pagerRef = useRef<PagerView>(null)
+  const [currentPage, setCurrentPage] = useState(0)
 
-    // Get locale info
-    const locales = Localization.getLocales()
-    const first = locales[0]
-    if (first) {
-      setLocaleInfo(
-        `${first.languageCode}-${first.regionCode ?? '??'} (${first.languageTag})`
-      )
+  const toggleVideo = useCallback(() => {
+    if (videoPlayer.playing) {
+      videoPlayer.pause()
+      setVideoStatus('paused')
+    } else {
+      videoPlayer.play()
+      setVideoStatus('playing')
     }
-  }, [])
+  }, [videoPlayer])
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    })
-    if (!result.canceled && result.assets[0]) {
-      setPickedImage(result.assets[0].uri)
-      setManipulatedImage(null)
+  const toggleAudio = useCallback(() => {
+    if (audioStatus.playing) {
+      audioPlayer.pause()
+    } else {
+      audioPlayer.play()
     }
-  }
+  }, [audioPlayer, audioStatus.playing])
 
-  const manipulateImage = async () => {
-    if (!pickedImage) return
-    setManipulating(true)
-    try {
-      const result = await ImageManipulator.manipulateAsync(
-        pickedImage,
-        [{ resize: { width: 300 } }, { rotate: 90 }],
-        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-      )
-      setManipulatedImage(result.uri)
-    } finally {
-      setManipulating(false)
-    }
-  }
-
-  const toggleLanguage = () => {
-    const next = i18n.language === 'ja' ? 'en' : 'ja'
-    i18n.changeLanguage(next)
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   return (
@@ -93,133 +62,147 @@ export default function MediaTab() {
       }}
     >
       <YStack ai="center" gap="$2">
-        <Ionicons name="images-outline" size={28} color="#C084FC" />
+        <Ionicons name="play-circle-outline" size={28} color="#A78BFA" />
         <SizableText size="$6" color="$color">
-          Media & i18n
+          Media (Video / Audio / Pager)
         </SizableText>
         <Paragraph ta="center" color="$gray11">
-          ImagePicker, ImageManipulator, LinearGradient, LivePhoto, Localization
+          expo-video, expo-audio, react-native-pager-view
         </Paragraph>
       </YStack>
 
-      {/* Linear Gradient Demo */}
+      {/* Video Section */}
       <YStack gap="$2" w="100%" maw={420}>
         <Text fontSize={18} color="$color">
-          Linear Gradient
+          🎬 Video Player
         </Text>
-        <LinearGradient
-          colors={
-            isDark ? ['#1e1b4b', '#4c1d95', '#7c3aed'] : ['#c4b5fd', '#a78bfa', '#8b5cf6']
-          }
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            width: '100%',
-            height: 100,
-            borderRadius: 12,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Text color="white" fontSize={16} fontWeight="600">
-            expo-linear-gradient
-          </Text>
-        </LinearGradient>
-      </YStack>
-
-      <Separator />
-
-      {/* Localization + i18n Demo */}
-      <YStack gap="$2" w="100%" maw={420}>
-        <Text fontSize={18} color="$color">
-          Localization + react-i18next
-        </Text>
-        <YStack gap="$1" bg="$gray3" p="$3" br="$3">
-          <Text color="$gray11">Device locale: {localeInfo}</Text>
-          <Text color="$gray11">Current language: {i18n.language}</Text>
-          <Text color="$color" fontSize={16} mt="$2">
-            {t('welcome')}
-          </Text>
-          <Text color="$color" fontSize={14}>
-            {t('greeting', { name: 'Expo' })}
-          </Text>
+        <YStack h={220} w="100%" br="$4" overflow="hidden" bg="$gray2">
+          <VideoView
+            player={videoPlayer}
+            style={{ flex: 1 }}
+            allowsFullscreen
+            allowsPictureInPicture
+          />
         </YStack>
-        <Button onPress={toggleLanguage}>
-          Switch to {i18n.language === 'ja' ? 'English' : '日本語'}
-        </Button>
-      </YStack>
-
-      <Separator />
-
-      {/* Image Picker + Manipulator Demo */}
-      <YStack gap="$2" w="100%" maw={420}>
-        <Text fontSize={18} color="$color">
-          {t('imageDemo')} (Picker + Manipulator)
-        </Text>
         <XStack gap="$2">
-          <Button flex={1} onPress={pickImage}>
-            {t('pickImage')}
+          <Button flex={1} onPress={toggleVideo}>
+            {videoStatus === 'playing' ? 'Pause' : 'Play'}
           </Button>
           <Button
             flex={1}
-            onPress={manipulateImage}
-            disabled={!pickedImage || manipulating}
             variant="outlined"
+            onPress={() => {
+              videoPlayer.seekBy(-10)
+            }}
           >
-            {manipulating ? 'Processing…' : 'Rotate + Resize'}
+            -10s
+          </Button>
+          <Button
+            flex={1}
+            variant="outlined"
+            onPress={() => {
+              videoPlayer.seekBy(10)
+            }}
+          >
+            +10s
           </Button>
         </XStack>
-        {pickedImage && (
-          <YStack gap="$2">
-            <Text color="$gray11" fontSize={12}>
-              Original:
-            </Text>
-            <Image
-              source={{ uri: pickedImage }}
-              width="100%"
-              height={200}
-              borderRadius={8}
-              resizeMode="cover"
-            />
-          </YStack>
-        )}
-        {manipulatedImage && (
-          <YStack gap="$2">
-            <Text color="$gray11" fontSize={12}>
-              Manipulated (rotated 90°, resized to 300px):
-            </Text>
-            <Image
-              source={{ uri: manipulatedImage }}
-              width="100%"
-              height={200}
-              borderRadius={8}
-              resizeMode="contain"
-            />
-          </YStack>
-        )}
+        <Paragraph color="$gray11" fontSize="$2">
+          Status: {videoStatus} | Loop: {videoPlayer.loop ? 'on' : 'off'}
+        </Paragraph>
       </YStack>
 
       <Separator />
 
-      {/* Live Photo Demo */}
+      {/* Audio Section */}
       <YStack gap="$2" w="100%" maw={420}>
         <Text fontSize={18} color="$color">
-          Live Photo
+          🎵 Audio Player
         </Text>
-        <YStack bg="$gray3" p="$3" br="$3">
-          <Text color="$gray11">
-            Available:{' '}
-            {livePhotoAvailable === null
-              ? 'checking…'
-              : livePhotoAvailable
-                ? 'yes'
-                : 'no (iOS 17+ only)'}
-          </Text>
-          <Text color="$gray10" fontSize={12} mt="$1">
-            expo-live-photo allows displaying and capturing Live Photos on supported iOS
-            devices.
-          </Text>
+        <YStack bg="$gray3" p="$3" br="$4" gap="$2">
+          <XStack jc="space-between" ai="center">
+            <Text color="$gray11">
+              {formatTime(audioStatus.currentTime)} /{' '}
+              {formatTime(audioStatus.duration || 0)}
+            </Text>
+            <Text color="$gray10" fontSize="$2">
+              {audioStatus.playing ? '▶️ Playing' : '⏸️ Paused'}
+            </Text>
+          </XStack>
+          <YStack h={4} bg="$gray5" br="$2" overflow="hidden">
+            <YStack
+              h="100%"
+              bg="$purple9"
+              w={`${((audioStatus.currentTime / (audioStatus.duration || 1)) * 100).toFixed(1)}%`}
+            />
+          </YStack>
         </YStack>
+        <XStack gap="$2">
+          <Button flex={1} onPress={toggleAudio}>
+            {audioStatus.playing ? 'Pause' : 'Play'}
+          </Button>
+          <Button
+            flex={1}
+            variant="outlined"
+            onPress={() => {
+              audioPlayer.seekTo(0)
+            }}
+          >
+            Restart
+          </Button>
+        </XStack>
+      </YStack>
+
+      <Separator />
+
+      {/* Pager View Section */}
+      <YStack gap="$2" w="100%" maw={420}>
+        <Text fontSize={18} color="$color">
+          📖 Pager View
+        </Text>
+        <YStack h={200} w="100%" br="$4" overflow="hidden">
+          <PagerView
+            ref={pagerRef}
+            style={{ flex: 1 }}
+            initialPage={0}
+            onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
+          >
+            <YStack key="1" flex={1} bg="$red5" ai="center" jc="center">
+              <Text fontSize={24} color="$red11">
+                Page 1 🔴
+              </Text>
+              <Text color="$red10">Swipe to navigate</Text>
+            </YStack>
+            <YStack key="2" flex={1} bg="$green5" ai="center" jc="center">
+              <Text fontSize={24} color="$green11">
+                Page 2 🟢
+              </Text>
+              <Text color="$green10">Keep swiping!</Text>
+            </YStack>
+            <YStack key="3" flex={1} bg="$blue5" ai="center" jc="center">
+              <Text fontSize={24} color="$blue11">
+                Page 3 🔵
+              </Text>
+              <Text color="$blue10">Last page</Text>
+            </YStack>
+          </PagerView>
+        </YStack>
+        <XStack gap="$2" jc="center">
+          {[0, 1, 2].map((i) => (
+            <YStack
+              key={i}
+              w={10}
+              h={10}
+              br={5}
+              bg={currentPage === i ? '$purple9' : '$gray6'}
+              pressStyle={{ scale: 0.9 }}
+              onPress={() => pagerRef.current?.setPage(i)}
+            />
+          ))}
+        </XStack>
+        <Text color="$gray11" ta="center">
+          Current: Page {currentPage + 1}
+        </Text>
       </YStack>
     </ScrollView>
   )

@@ -45,7 +45,10 @@
       "expo-secure-store",
       "expo-asset",
       "expo-localization",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-tracking-transparency",
+      "expo-video",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true

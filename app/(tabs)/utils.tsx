@@ -1,305 +1,212 @@
 import { Ionicons } from '@expo/vector-icons'
-import * as Sharing from 'expo-sharing'
-import * as SMS from 'expo-sms'
-import * as Speech from 'expo-speech'
-import * as SQLite from 'expo-sqlite'
-import * as StoreReview from 'expo-store-review'
-import { useEffect, useState } from 'react'
-import { ScrollView } from 'react-native'
-import {
-  Button,
-  Input,
-  Paragraph,
-  Separator,
-  SizableText,
-  Text,
-  XStack,
-  YStack,
-} from 'tamagui'
+import SegmentedControl from '@react-native-segmented-control/segmented-control'
+import { FlashList } from '@shopify/flash-list'
+import * as TrackingTransparency from 'expo-tracking-transparency'
+import { useCallback, useState } from 'react'
+import { Platform, ScrollView, TextInput } from 'react-native'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
+import MapView, { Marker } from 'react-native-maps'
+import { Button, Paragraph, Separator, SizableText, Text, XStack, YStack } from 'tamagui'
+
+// Sample data for FlashList
+const SAMPLE_DATA = Array.from({ length: 100 }, (_, i) => ({
+  id: i.toString(),
+  title: `Item ${i + 1}`,
+  subtitle: `This is the description for item ${i + 1}`,
+}))
 
 export default function UtilsTab() {
-  // Speech
-  const [speechText, setSpeechText] = useState('Hello from Expo Speech!')
-  const [isSpeaking, setIsSpeaking] = useState(false)
-  const [voices, setVoices] = useState<Speech.Voice[]>([])
+  // Tracking Transparency
+  const [trackingStatus, setTrackingStatus] = useState<string>('not requested')
 
-  // SMS
-  const [smsAvailable, setSmsAvailable] = useState<boolean | null>(null)
+  // Segmented Control
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const segmentOptions = ['Option A', 'Option B', 'Option C']
 
-  // Sharing
-  const [sharingAvailable, setSharingAvailable] = useState<boolean | null>(null)
+  // FlashList visibility
+  const [showFlashList, setShowFlashList] = useState(false)
 
-  // Store Review
-  const [reviewAvailable, setReviewAvailable] = useState<boolean | null>(null)
-  const [reviewStatus, setReviewStatus] = useState('not requested')
+  // Map region (Tokyo)
+  const [region] = useState({
+    latitude: 35.6762,
+    longitude: 139.6503,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  })
 
-  // SQLite
-  const [dbStatus, setDbStatus] = useState('not initialized')
-  const [dbItems, setDbItems] = useState<{ id: number; value: string }[]>([])
-  const [newItem, setNewItem] = useState('')
-
-  // Task Manager
-  const [taskStatus, setTaskStatus] = useState('not checked')
-
-  useEffect(() => {
-    // Check SMS availability
-    SMS.isAvailableAsync()
-      .then((available) => setSmsAvailable(available))
-      .catch(() => setSmsAvailable(false))
-
-    // Check Sharing availability
-    Sharing.isAvailableAsync()
-      .then((available) => setSharingAvailable(available))
-      .catch(() => setSharingAvailable(false))
-
-    // Check Store Review availability
-    StoreReview.isAvailableAsync()
-      .then((available) => setReviewAvailable(available))
-      .catch(() => setReviewAvailable(false))
-
-    // Get available voices
-    Speech.getAvailableVoicesAsync()
-      .then((v) => setVoices(v.slice(0, 5)))
-      .catch(() => setVoices([]))
-
-    // Check registered tasks
-    import('expo-task-manager')
-      .then((TaskManager) => TaskManager.getRegisteredTasksAsync())
-      .then((tasks) => setTaskStatus(`${tasks.length} tasks registered`))
-      .catch(() => setTaskStatus('unavailable (needs dev client)'))
+  const requestTracking = useCallback(async () => {
+    try {
+      setTrackingStatus('requesting...')
+      const { status } = await TrackingTransparency.requestTrackingPermissionsAsync()
+      setTrackingStatus(status)
+    } catch (error) {
+      setTrackingStatus(`error: ${String(error)}`)
+    }
   }, [])
 
-  // Speech functions
-  const speak = () => {
-    setIsSpeaking(true)
-    Speech.speak(speechText, {
-      language: 'en-US',
-      onDone: () => setIsSpeaking(false),
-      onStopped: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false),
-    })
-  }
-
-  const stopSpeech = () => {
-    Speech.stop()
-    setIsSpeaking(false)
-  }
-
-  // SMS function
-  const sendSMS = async () => {
-    if (!smsAvailable) return
-    await SMS.sendSMSAsync([''], 'Hello from Expo SMS!')
-  }
-
-  // Store Review function
-  const requestReview = async () => {
+  const checkTracking = useCallback(async () => {
     try {
-      if (await StoreReview.hasAction()) {
-        await StoreReview.requestReview()
-        setReviewStatus('requested')
-      } else {
-        setReviewStatus('no action available')
-      }
-    } catch (e) {
-      setReviewStatus(`error: ${String(e)}`)
+      const status = await TrackingTransparency.getTrackingPermissionsAsync()
+      setTrackingStatus(status.status)
+    } catch (error) {
+      setTrackingStatus(`error: ${String(error)}`)
     }
-  }
-
-  // SQLite functions
-  const initDB = async () => {
-    try {
-      setDbStatus('initializing…')
-      const db = await SQLite.openDatabaseAsync('demo.db')
-      await db.execAsync(`
-        CREATE TABLE IF NOT EXISTS items (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          value TEXT NOT NULL
-        );
-      `)
-      setDbStatus('initialized')
-      await loadItems()
-    } catch (e) {
-      setDbStatus(`error: ${String(e)}`)
-    }
-  }
-
-  const loadItems = async () => {
-    try {
-      const db = await SQLite.openDatabaseAsync('demo.db')
-      const rows = await db.getAllAsync<{ id: number; value: string }>(
-        'SELECT * FROM items ORDER BY id DESC LIMIT 10'
-      )
-      setDbItems(rows)
-    } catch (e) {
-      console.log('loadItems error:', e)
-    }
-  }
-
-  const addItem = async () => {
-    if (!newItem.trim()) return
-    try {
-      const db = await SQLite.openDatabaseAsync('demo.db')
-      await db.runAsync('INSERT INTO items (value) VALUES (?)', newItem.trim())
-      setNewItem('')
-      await loadItems()
-    } catch (e) {
-      console.log('addItem error:', e)
-    }
-  }
-
-  const clearItems = async () => {
-    try {
-      const db = await SQLite.openDatabaseAsync('demo.db')
-      await db.runAsync('DELETE FROM items')
-      setDbItems([])
-    } catch (e) {
-      console.log('clearItems error:', e)
-    }
-  }
+  }, [])
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: 'transparent' }}
-      contentContainerStyle={{
-        paddingHorizontal: 16,
-        paddingVertical: 20,
-        gap: 18,
-        alignItems: 'center',
-        paddingBottom: 120,
-      }}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <YStack ai="center" gap="$2">
-        <Ionicons name="build-outline" size={28} color="#F97316" />
-        <SizableText size="$6" color="$color">
-          Utils & Storage
-        </SizableText>
-        <Paragraph ta="center" color="$gray11">
-          Speech, SMS, Sharing, SQLite, StoreReview, TaskManager
-        </Paragraph>
-      </YStack>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: 'transparent' }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingVertical: 20,
+          gap: 18,
+          alignItems: 'center',
+          paddingBottom: 120,
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <YStack ai="center" gap="$2">
+          <Ionicons name="build-outline" size={28} color="#FB923C" />
+          <SizableText size="$6" color="$color">
+            Utils (Various Tools)
+          </SizableText>
+          <Paragraph ta="center" color="$gray11">
+            Tracking, Maps, FlashList, Keyboard, Segmented
+          </Paragraph>
+        </YStack>
 
-      {/* Speech Demo */}
-      <YStack gap="$2" w="100%" maw={420}>
-        <Text fontSize={18} color="$color">
-          Speech
-        </Text>
-        <Input
-          value={speechText}
-          onChangeText={setSpeechText}
-          placeholder="Text to speak"
-        />
-        <XStack gap="$2">
-          <Button flex={1} onPress={speak} disabled={isSpeaking}>
-            {isSpeaking ? 'Speaking…' : 'Speak'}
-          </Button>
-          <Button flex={1} onPress={stopSpeech} variant="outlined" disabled={!isSpeaking}>
-            Stop
-          </Button>
-        </XStack>
-        <Paragraph color="$gray11" fontSize={12}>
-          Voices: {voices.length > 0 ? voices.map((v) => v.name).join(', ') : 'loading…'}
-        </Paragraph>
-      </YStack>
+        {/* Tracking Transparency Section */}
+        <YStack gap="$2" w="100%" maw={420}>
+          <Text fontSize={18} color="$color">
+            🔒 Tracking Transparency (ATT)
+          </Text>
+          <XStack gap="$2">
+            <Button flex={1} onPress={requestTracking}>
+              Request
+            </Button>
+            <Button flex={1} variant="outlined" onPress={checkTracking}>
+              Check Status
+            </Button>
+          </XStack>
+          <Paragraph color="$gray11">Status: {trackingStatus}</Paragraph>
+          <Paragraph color="$gray10" fontSize="$2">
+            iOS 14.5+ requires ATT permission for ad tracking
+          </Paragraph>
+        </YStack>
 
-      <Separator />
+        <Separator />
 
-      {/* SMS Demo */}
-      <YStack gap="$2" w="100%" maw={420}>
-        <Text fontSize={18} color="$color">
-          SMS
-        </Text>
-        <Paragraph color="$gray11">
-          Available: {smsAvailable === null ? 'checking…' : smsAvailable ? 'yes' : 'no'}
-        </Paragraph>
-        <Button onPress={sendSMS} disabled={!smsAvailable}>
-          Compose SMS
-        </Button>
-      </YStack>
-
-      <Separator />
-
-      {/* Sharing Demo */}
-      <YStack gap="$2" w="100%" maw={420}>
-        <Text fontSize={18} color="$color">
-          Sharing
-        </Text>
-        <Paragraph color="$gray11">
-          Available:{' '}
-          {sharingAvailable === null ? 'checking…' : sharingAvailable ? 'yes' : 'no'}
-        </Paragraph>
-        <Paragraph color="$gray10" fontSize={12}>
-          Use Sharing.shareAsync(fileUri) to share files
-        </Paragraph>
-      </YStack>
-
-      <Separator />
-
-      {/* Store Review Demo */}
-      <YStack gap="$2" w="100%" maw={420}>
-        <Text fontSize={18} color="$color">
-          Store Review
-        </Text>
-        <Paragraph color="$gray11">
-          Available:{' '}
-          {reviewAvailable === null ? 'checking…' : reviewAvailable ? 'yes' : 'no'}
-        </Paragraph>
-        <Button onPress={requestReview} disabled={!reviewAvailable}>
-          Request Review
-        </Button>
-        <Paragraph color="$gray11">Status: {reviewStatus}</Paragraph>
-      </YStack>
-
-      <Separator />
-
-      {/* SQLite Demo */}
-      <YStack gap="$2" w="100%" maw={420}>
-        <Text fontSize={18} color="$color">
-          SQLite
-        </Text>
-        <XStack gap="$2">
-          <Button flex={1} onPress={initDB}>
-            Init DB
-          </Button>
-          <Button flex={1} onPress={clearItems} variant="outlined">
-            Clear
-          </Button>
-        </XStack>
-        <Paragraph color="$gray11">Status: {dbStatus}</Paragraph>
-        <XStack gap="$2">
-          <Input
-            flex={1}
-            value={newItem}
-            onChangeText={setNewItem}
-            placeholder="New item"
+        {/* Segmented Control Section */}
+        <YStack gap="$2" w="100%" maw={420}>
+          <Text fontSize={18} color="$color">
+            🔘 Segmented Control
+          </Text>
+          <SegmentedControl
+            values={segmentOptions}
+            selectedIndex={selectedIndex}
+            onChange={(event) => {
+              setSelectedIndex(event.nativeEvent.selectedSegmentIndex)
+            }}
+            style={{ width: '100%' }}
           />
-          <Button onPress={addItem} disabled={dbStatus !== 'initialized'}>
-            Add
-          </Button>
-        </XStack>
-        {dbItems.length > 0 && (
-          <YStack bg="$gray3" p="$2" br="$3" gap="$1">
-            {dbItems.map((item) => (
-              <Text key={item.id} color="$color" fontSize={14}>
-                #{item.id}: {item.value}
-              </Text>
-            ))}
+          <Text color="$gray11" ta="center">
+            Selected: {segmentOptions[selectedIndex]}
+          </Text>
+        </YStack>
+
+        <Separator />
+
+        {/* Keyboard Controller Section */}
+        <YStack gap="$2" w="100%" maw={420}>
+          <Text fontSize={18} color="$color">
+            ⌨️ Keyboard Controller
+          </Text>
+          <Paragraph color="$gray10" fontSize="$2">
+            This screen uses KeyboardAvoidingView from react-native-keyboard-controller
+          </Paragraph>
+          <TextInput
+            placeholder="Type here to test keyboard..."
+            style={{
+              borderWidth: 1,
+              borderColor: '#444',
+              borderRadius: 8,
+              padding: 12,
+              color: '#fff',
+              backgroundColor: '#222',
+            }}
+            placeholderTextColor="#666"
+          />
+        </YStack>
+
+        <Separator />
+
+        {/* Maps Section */}
+        <YStack gap="$2" w="100%" maw={420}>
+          <Text fontSize={18} color="$color">
+            🗺️ Maps (Tokyo)
+          </Text>
+          <YStack h={200} w="100%" br="$4" overflow="hidden">
+            <MapView
+              style={{ flex: 1 }}
+              initialRegion={region}
+              showsUserLocation
+              showsMyLocationButton
+            >
+              <Marker
+                coordinate={{ latitude: 35.6762, longitude: 139.6503 }}
+                title="Tokyo"
+                description="Capital of Japan"
+              />
+              <Marker
+                coordinate={{ latitude: 35.6586, longitude: 139.7454 }}
+                title="Tokyo Tower"
+                description="Famous landmark"
+              />
+            </MapView>
           </YStack>
-        )}
-      </YStack>
+          <Paragraph color="$gray10" fontSize="$2">
+            Requires API key for production (Google Maps / Apple Maps)
+          </Paragraph>
+        </YStack>
 
-      <Separator />
+        <Separator />
 
-      {/* Task Manager Demo */}
-      <YStack gap="$2" w="100%" maw={420}>
-        <Text fontSize={18} color="$color">
-          Task Manager
-        </Text>
-        <Paragraph color="$gray11">Status: {taskStatus}</Paragraph>
-        <Paragraph color="$gray10" fontSize={12}>
-          Background tasks require native configuration (app.json plugins) and a dev
-          client build.
-        </Paragraph>
-      </YStack>
-    </ScrollView>
+        {/* FlashList Section */}
+        <YStack gap="$2" w="100%" maw={420}>
+          <XStack jc="space-between" ai="center">
+            <Text fontSize={18} color="$color">
+              ⚡ FlashList (100 items)
+            </Text>
+            <Button size="$2" onPress={() => setShowFlashList(!showFlashList)}>
+              {showFlashList ? 'Hide' : 'Show'}
+            </Button>
+          </XStack>
+          {showFlashList && (
+            <YStack h={300} w="100%" br="$4" overflow="hidden" bg="$gray2">
+              <FlashList
+                data={SAMPLE_DATA}
+                renderItem={({ item }) => (
+                  <YStack p="$3" borderBottomWidth={1} borderBottomColor="$gray5">
+                    <Text color="$color" fontWeight="bold">
+                      {item.title}
+                    </Text>
+                    <Text color="$gray11" fontSize="$2">
+                      {item.subtitle}
+                    </Text>
+                  </YStack>
+                )}
+              />
+            </YStack>
+          )}
+          <Paragraph color="$gray10" fontSize="$2">
+            @shopify/flash-list for high-performance lists
+          </Paragraph>
+        </YStack>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }

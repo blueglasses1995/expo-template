@@ -2,6 +2,7 @@ import 'react-native-gesture-handler'
 import { useEffect } from 'react'
 import { useColorScheme } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { enableScreens } from 'react-native-screens'
 import '../tamagui-web.css'
@@ -53,9 +54,11 @@ export default function RootLayout() {
 
 const Providers = ({ children }: { children: React.ReactNode }) => (
   <GestureHandlerRootView style={{ flex: 1 }}>
-    <SafeAreaProvider>
-      <Provider>{children}</Provider>
-    </SafeAreaProvider>
+    <KeyboardProvider>
+      <SafeAreaProvider>
+        <Provider>{children}</Provider>
+      </SafeAreaProvider>
+    </KeyboardProvider>
   </GestureHandlerRootView>
 )
 
