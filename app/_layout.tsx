@@ -141,6 +141,20 @@ function RootLayoutNav() {
             },
           }}
         />
+
+        <Stack.Screen
+          name="location"
+          options={{
+            title: '位置情報',
+            presentation: 'modal',
+            animation: 'slide_from_right',
+            gestureEnabled: true,
+            gestureDirection: 'horizontal',
+            contentStyle: {
+              backgroundColor: '#000',
+            },
+          }}
+        />
       </Stack>
     </>
   )

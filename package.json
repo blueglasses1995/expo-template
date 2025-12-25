@@ -109,6 +109,7 @@
     "expo-live-photo": "~1.0.8",
     "expo-local-authentication": "~17.0.8",
     "expo-localization": "~17.0.8",
+    "expo-location": "~19.0.8",
     "expo-notifications": "~0.32.14",
     "expo-router": "~6.0.14",
     "expo-screen-orientation": "~9.0.8",
